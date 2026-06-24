@@ -30,6 +30,8 @@ Gem::Specification.new do |spec|
   spec.executables = ["asciidoctor_vaped"]
   spec.require_paths = ["lib"]
 
+  spec.add_development_dependency "minitest", "~> 5.0"
+
   # For more information and examples about making a new gem, check out our
   # guide at: https://guides.rubygems.org/make-your-own-gem/
 end
