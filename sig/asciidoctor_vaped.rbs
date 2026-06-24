@@ -1,4 +1,45 @@
 module AsciidoctorVaped
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  def self.load: (String source, ?Hash[untyped, untyped] options) -> AST::Document
+  def self.load_file: (String filename, ?Hash[untyped, untyped] options) -> AST::Document
+  def self.convert: (String source, ?Hash[untyped, untyped] options) -> String
+  def self.convert_file: (String filename, ?Hash[untyped, untyped] options) -> String?
+  def self.parse: (String source, ?attributes: Hash[untyped, untyped]) -> AST::Document
+
+  module AST
+    class Node
+      attr_reader context: Symbol
+      attr_reader attributes: Hash[untyped, untyped]
+      attr_reader blocks: Array[Node]
+      attr_accessor parent: Node?
+      attr_accessor text: String?
+
+      def initialize: (Symbol context, ?text: String?, ?attributes: Hash[untyped, untyped]) -> void
+      def <<: (Node block) -> Node
+      def sections: () -> Array[Node]
+      def to_h: () -> Hash[Symbol, untyped]
+    end
+
+    class Document < Node
+      attr_accessor doctitle: String?
+
+      def initialize: (String source, ?attributes: Hash[untyped, untyped]) -> void
+      def source: () -> String
+      def register_attribute: (untyped name, untyped value) -> untyped
+      def to_h: () -> Hash[Symbol, untyped]
+    end
+  end
+
+  module Converter
+    class DocBook
+      def initialize: (?Hash[untyped, untyped] options) -> void
+      def convert: (AST::Document document) -> String
+    end
+  end
+
+  class CLI
+    def initialize: (Array[String] argv, ?out: untyped, ?err: untyped) -> void
+    def run: () -> Integer
+  end
 end
