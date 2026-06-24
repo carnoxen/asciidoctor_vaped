@@ -13,10 +13,10 @@ class CLITest < Minitest::Test
     assert_includes out.string, "<para>hello <emphasis role=\"strong\">world</emphasis></para>"
   end
 
-  def test_file_mode_writes_default_docbook_file
+  def test_file_mode_writes_default_html_file
     Dir.mktmpdir do |dir|
       input = File.join(dir, "demo.adoc")
-      output = File.join(dir, "demo.dkb")
+      output = File.join(dir, "demo.html")
       File.write(input, "= Demo\n\nhello *world*")
 
       Dir.chdir(dir) do
@@ -24,11 +24,11 @@ class CLITest < Minitest::Test
       end
 
       assert File.exist?(output)
-      assert_includes File.read(output), "<title>Demo</title>"
+      assert_includes File.read(output), "<strong>world</strong>"
     end
   end
 
-  def test_file_mode_writes_explicit_output
+  def test_file_mode_writes_docbook_for_docbook_extension
     Dir.mktmpdir do |dir|
       input = File.join(dir, "demo.adoc")
       output = File.join(dir, "result.dkb")
@@ -38,6 +38,19 @@ class CLITest < Minitest::Test
 
       assert File.exist?(output)
       assert_includes File.read(output), "<article>"
+    end
+  end
+
+  def test_file_mode_writes_html_for_html_extension
+    Dir.mktmpdir do |dir|
+      input = File.join(dir, "demo.adoc")
+      output = File.join(dir, "result.html")
+      File.write(input, "= Demo")
+
+      assert_equal 0, AsciidoctorVaped::CLI.new([input, output]).run
+
+      assert File.exist?(output)
+      assert_includes File.read(output), "<!DOCTYPE html>"
     end
   end
 end

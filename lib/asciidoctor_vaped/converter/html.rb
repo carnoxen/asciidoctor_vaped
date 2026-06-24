@@ -2,11 +2,7 @@
 
 module AsciidoctorVaped
   module Converter
-    class HTML
-      def initialize(options = {})
-        @options = options
-      end
-
+    class HTML < BaseConverter
       def convert(document)
         body = document.blocks.map { |block| convert_node(block) }.join("\n")
         return body if @options[:header_footer] == false
@@ -98,18 +94,6 @@ module AsciidoctorVaped
       def head(document)
         title = document.doctitle || "Untitled"
         "<head><meta charset=\"utf-8\"><title>#{escape title}</title></head>"
-      end
-
-      def escape(value)
-        value.to_s
-          .gsub("&", "&amp;")
-          .gsub("<", "&lt;")
-          .gsub(">", "&gt;")
-          .gsub('"', "&quot;")
-      end
-
-      def escape_attr(value)
-        escape(value).gsub('"', "&quot;")
       end
     end
   end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative "base_block"
 
 module AsciidoctorVaped
   module Parser
     module BlockHandlers
-      class Admonition < Base
+      class Admonition < BaseBlock
         PATTERN = /\A(NOTE|TIP|IMPORTANT|WARNING|CAUTION):\s+(.+)\z/
 
         def match?(context)

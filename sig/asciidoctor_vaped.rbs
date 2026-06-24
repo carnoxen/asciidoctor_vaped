@@ -31,8 +31,16 @@ module AsciidoctorVaped
     end
   end
 
-  module Converter
-    class DocBook
+  class Converter
+    def initialize: (?Hash[untyped, untyped] options) -> void
+    def convert: (AST::Document document) -> String
+
+    class DocBook < Converter
+      def initialize: (?Hash[untyped, untyped] options) -> void
+      def convert: (AST::Document document) -> String
+    end
+
+    class HTML < Converter
       def initialize: (?Hash[untyped, untyped] options) -> void
       def convert: (AST::Document document) -> String
     end

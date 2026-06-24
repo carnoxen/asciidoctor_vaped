@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative "base_block"
 require "strscan"
 
 module AsciidoctorVaped
   module Parser
     module BlockHandlers
-      class AttributeList < Base
+      class AttributeList < BaseBlock
         PATTERN = /\A\[(.+)\]\z/
 
         def match?(context)

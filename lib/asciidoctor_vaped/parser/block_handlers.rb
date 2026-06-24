@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "block_handlers/base"
+require_relative "block_handlers/base_block"
 require_relative "block_handlers/blank_line"
 require_relative "block_handlers/attribute_entry"
 require_relative "block_handlers/block_title"

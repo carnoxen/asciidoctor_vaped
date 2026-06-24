@@ -2,10 +2,7 @@
 
 module AsciidoctorVaped
   module Converter
-    class DocBook
-      def initialize(_options = {})
-      end
-
+    class DocBook < BaseConverter
       def convert(document)
         title = document.doctitle || "Untitled"
         body = document.blocks.map { |block| convert_node(block) }.join("\n")
@@ -75,18 +72,6 @@ module AsciidoctorVaped
           .gsub(/\*([^*]+)\*/, '<emphasis role="strong">\1</emphasis>')
           .gsub(/_([^_]+)_/, '<emphasis>\1</emphasis>')
           .gsub(/`([^`]+)`/, '<literal>\1</literal>')
-      end
-
-      def escape(value)
-        value.to_s
-          .gsub("&", "&amp;")
-          .gsub("<", "&lt;")
-          .gsub(">", "&gt;")
-          .gsub('"', "&quot;")
-      end
-
-      def escape_attr(value)
-        escape(value).gsub('"', "&quot;")
       end
     end
   end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative "base_block"
 
 module AsciidoctorVaped
   module Parser
     module BlockHandlers
-      class ListBase < Base
+      class ListBase < BaseBlock
         def parse(context)
           list = AST::Node.new(list_context)
           read_items(context).each { |item| list << item }

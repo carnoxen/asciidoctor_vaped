@@ -34,17 +34,24 @@ module AsciidoctorVaped
     def file_mode
       input = @argv.shift
       output = @argv.shift || default_output(input)
-      File.write(output, AsciidoctorVaped.convert(File.read(input), backend: :docbook))
+      File.write(output, AsciidoctorVaped.convert(File.read(input), backend: backend_for(output)))
       0
     end
 
     def default_output(input)
-      "#{File.basename(input, File.extname(input))}.dkb"
+      "#{File.basename(input, File.extname(input))}.html"
+    end
+
+    def backend_for(output)
+      case File.extname(output).downcase
+      when ".dkb", ".xml" then :docbook
+      else :html
+      end
     end
 
     def usage(status)
       @err.puts "Usage:"
-      @err.puts "  asciidoctor_vaped FILE [OUTPUT.dkb]"
+      @err.puts "  asciidoctor_vaped FILE [OUTPUT.html]"
       @err.puts "  asciidoctor_vaped -s STRING"
       status
     end

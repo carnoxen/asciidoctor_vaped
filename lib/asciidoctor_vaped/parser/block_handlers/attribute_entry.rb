@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base"
+require_relative "base_block"
 
 module AsciidoctorVaped
   module Parser
     module BlockHandlers
-      class AttributeEntry < Base
+      class AttributeEntry < BaseBlock
         PATTERN = /\A:([^:\s][^:]*):\s*(.*)\z/
 
         def match?(context)
