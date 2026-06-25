@@ -4,16 +4,16 @@ require_relative "list_base"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class UnorderedList < ListBase
+    module Blocks
+      class OrderedList < ListBase
         def match?(context)
           context.reader.peek&.match?(pattern)
         end
 
         private
 
-        def list_context = :ulist
-        def pattern = /\A[*-]\s+/
+        def list_context = :olist
+        def pattern = /\A\.\s+/
       end
     end
   end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base_block"
+require_relative "base_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class BlankLine < BaseBlock
+    module Blocks
+      class BlankLine < BaseNode
         def match?(context)
           context.reader.peek&.strip == ""
         end

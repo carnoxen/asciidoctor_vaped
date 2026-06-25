@@ -18,7 +18,8 @@ class ParserTest < Minitest::Test
     assert_equal "Document Title", document.doctitle
     assert_equal "", document.attributes["toc"]
     assert_equal "Section Title", document.sections.first.text
-    assert_equal ["Item 1", "Item 2"], document.sections.first.blocks.first.blocks.map(&:text)
+    list = document.sections.first.children.find { |child| child.context == :ulist }
+    assert_equal ["Item 1", "Item 2"], list.children.map(&:text)
   end
 
   def test_convert_accepts_quick_reference_url_with_link_text
@@ -29,6 +30,31 @@ class ParserTest < Minitest::Test
     ADOC
 
     assert_includes html, '<a href="https://asciidoctor.org">Asciidoctor</a>'
+  end
+
+  def test_parse_builds_inline_nodes
+    document = AsciidoctorVaped.parse <<~ADOC
+      A *strong* _emphasis_ `code` https://asciidoctor.org[Asciidoctor] text.
+    ADOC
+
+    paragraph = document.children.first
+
+    assert_equal :paragraph, paragraph.context
+    assert_equal %i[text strong text emphasis text monospace text link text], paragraph.children.map(&:context)
+    assert_equal "strong", paragraph.children[1].text
+    assert_equal "emphasis", paragraph.children[3].text
+    assert_equal "code", paragraph.children[5].text
+    assert_equal "https://asciidoctor.org", paragraph.children[7].attributes[:target]
+    assert_equal "Asciidoctor", paragraph.children[7].text
+    assert_same paragraph, paragraph.children[1].parent
+  end
+
+  def test_convert_renders_parsed_inline_nodes
+    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
+      * Use *strong*, _emphasis_, and `code`
+    ADOC
+
+    assert_includes html, "<li>Use <strong>strong</strong>, <em>emphasis</em>, and <code>code</code></li>"
   end
 
   def test_convert_handles_quick_reference_block_examples_without_dependency
@@ -57,12 +83,17 @@ class ParserTest < Minitest::Test
 
     assert_includes html, '<div class="ulist">'
     assert_includes html, '<div class="olist">'
+    assert_includes html, "<li>Edgar Allan Poe</li>"
+    refute_includes html, "<li><p>Edgar Allan Poe</p></li>"
+    assert_includes html, "<li>Protons</li>"
+    refute_includes html, "<li><p>Protons</p></li>"
     assert_includes html, '<pre class="highlight"><code class="language-ruby" data-lang="ruby">'
     assert_includes html, '<table class="tableblock frame-all grid-all stretch">'
+    assert_includes html, "<tr>\n<td class=\"tableblock halign-left valign-top\"><p class=\"tableblock\">Firefox</p></td>\n<td class=\"tableblock halign-left valign-top\"><p class=\"tableblock\">Browser</p></td>\n</tr>"
     assert_includes html, '<td class="icon">'
   end
 
-  def test_parses_quick_reference_block_titles_and_delimited_blocks
+  def test_parses_quick_reference_block_titles_and_delimited_nodes
     document = AsciidoctorVaped.parse <<~ADOC
       .Example Block
       ====
@@ -76,7 +107,7 @@ class ParserTest < Minitest::Test
       WARNING: Careful.
     ADOC
 
-    example, literal, warning = document.blocks
+    example, literal, warning = document.children
 
     assert_equal :example, example.context
     assert_equal "Example Block", example.attributes[:title]
@@ -116,7 +147,8 @@ class ParserTest < Minitest::Test
     assert_equal 1, section.attributes[:level]
     assert_equal "Level 2 Section", nested.text
     assert_equal 2, nested.attributes[:level]
-    assert_equal "Section content.", nested.blocks.first.text
+    paragraph = nested.children.find { |child| child.context == :paragraph }
+    assert_equal "Section content.", paragraph.text
   end
 
   def test_parses_quick_reference_listing_and_lists
@@ -132,11 +164,11 @@ class ParserTest < Minitest::Test
       . Electrons
     ADOC
 
-    listing, unordered, ordered = document.blocks
+    listing, unordered, ordered = document.children
 
     assert_equal :listing, listing.context
     assert_equal "puts 'Hello, World!'", listing.text
-    assert_equal ["Edgar Allan Poe", "Sheri S. Tepper"], unordered.blocks.map(&:text)
-    assert_equal %w[Protons Electrons], ordered.blocks.map(&:text)
+    assert_equal ["Edgar Allan Poe", "Sheri S. Tepper"], unordered.children.map(&:text)
+    assert_equal %w[Protons Electrons], ordered.children.map(&:text)
   end
 end

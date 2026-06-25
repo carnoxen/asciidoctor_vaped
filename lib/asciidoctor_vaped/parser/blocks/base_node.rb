@@ -2,8 +2,8 @@
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class BaseBlock
+    module Blocks
+      class BaseNode
         def initialize(successor = nil)
           @successor = successor
         end

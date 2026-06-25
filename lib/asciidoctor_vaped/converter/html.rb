@@ -4,7 +4,7 @@ module AsciidoctorVaped
   module Converter
     class HTML < BaseConverter
       def convert(document)
-        body = document.blocks.map { |block| convert_node(block) }.join("\n")
+        body = node_children(document).map { |child| convert_node(child) }.join("\n")
         return body if @options[:header_footer] == false
 
         [doctype, "<html>", head(document), "<body>", body, "</body>", "</html>"].join("\n")
@@ -15,7 +15,7 @@ module AsciidoctorVaped
       def convert_node(node)
         case node.context
         when :section then section(node)
-        when :paragraph then %(<p>#{inline node.text}</p>)
+        when :paragraph then %(<p>#{inline node}</p>)
         when :listing then listing(node)
         when :literal then %(<pre>#{escape node.text}</pre>)
         when :ulist then list(node, "ul")
@@ -25,7 +25,7 @@ module AsciidoctorVaped
         when :example then block("exampleblock", node)
         when :quote then block("quoteblock", node)
         when :sidebar then block("sidebarblock", node)
-        when :open then node.blocks.map { |block| convert_node(block) }.join("\n")
+        when :open then node_children(node).map { |child| convert_node(child) }.join("\n")
         else inline(node.text.to_s)
         end
       end
@@ -33,8 +33,8 @@ module AsciidoctorVaped
       def section(node)
         level = node.attributes.fetch(:level, 1)
         heading = "h#{[level + 1, 6].min}"
-        contents = node.blocks.map { |block| convert_node(block) }.join("\n")
-        %(<div class="sect#{level}">\n<#{heading}>#{inline node.text}</#{heading}>\n#{contents}\n</div>)
+        contents = node_children(node).map { |child| convert_node(child) }.join("\n")
+        %(<div class="sect#{level}">\n<#{heading}>#{inline node}</#{heading}>\n#{contents}\n</div>)
       end
 
       def listing(node)
@@ -44,27 +44,28 @@ module AsciidoctorVaped
       end
 
       def list(node, tag)
-        items = node.blocks.map { |item| "<li><p>#{inline item.text}</p></li>" }.join("\n")
+        items = node.children.map { |item| "<li>#{inline item}</li>" }.join("\n")
         %(<div class="#{tag == "ul" ? "ulist" : "olist"}">\n<#{tag}>\n#{items}\n</#{tag}>\n</div>)
       end
 
       def table(node)
-        rows = node.blocks.map { |row| table_row(row) }.join("\n")
+        rows = node.children.map { |row| table_row(row) }.join("\n")
         %(<table class="tableblock frame-all grid-all stretch">\n<tbody>\n#{rows}\n</tbody>\n</table>)
       end
 
       def table_row(row)
-        cells = row.blocks.map { |cell| %(<td class="tableblock halign-left valign-top"><p class="tableblock">#{inline cell.text}</p></td>) }
+        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top"><p class="tableblock">#{inline cell}</p></td>) }
         "<tr>\n#{cells.join("\n")}\n</tr>"
       end
 
       def admonition(node)
         name = node.attributes.fetch(:name, "note").to_s
-        %(<div class="admonitionblock #{escape_attr name.downcase}">\n<table>\n<tr>\n<td class="icon"><div class="title">#{escape name.capitalize}</div></td>\n<td class="content">#{inline node.text}</td>\n</tr>\n</table>\n</div>)
+        %(<div class="admonitionblock #{escape_attr name.downcase}">\n<table>\n<tr>\n<td class="icon"><div class="title">#{escape name.capitalize}</div></td>\n<td class="content">#{inline node}</td>\n</tr>\n</table>\n</div>)
       end
 
       def block(class_name, node)
-        body = node.blocks.empty? ? inline(node.text.to_s) : node.blocks.map { |block| convert_node(block) }.join("\n")
+        children = node_children(node)
+        body = children.empty? ? inline(node) : children.map { |child| convert_node(child) }.join("\n")
         %(<div class="#{class_name}">\n#{title node}\n<div class="content">#{body}</div>\n</div>)
       end
 
@@ -74,17 +75,34 @@ module AsciidoctorVaped
         %(<div class="title">#{inline node.attributes[:title]}</div>)
       end
 
-      def inline(text)
-        escaped = escape(text.to_s)
-        links = []
-        escaped = escaped.gsub(%r{https?://[^\s\[]+\[([^\]]+)\]}) do
-          links << %(<a href="#{escape_attr Regexp.last_match(0).split("[").first}">#{Regexp.last_match(1)}</a>)
-          "\0#{links.length - 1}\0"
+      def inline(value)
+        nodes = value.respond_to?(:children) ? inline_nodes(value) : Parser::Inline.parse(value)
+        return escape(value.text.to_s) if nodes.empty? && value.respond_to?(:text)
+
+        nodes.map { |node| inline_node(node) }.join
+      end
+
+      def inline_node(node)
+        case node.context
+        when :text then escape(node.text)
+        when :link then %(<a href="#{escape_attr node.attributes.fetch(:target)}">#{inline node}</a>)
+        when :strong then "<strong>#{inline node}</strong>"
+        when :emphasis then "<em>#{inline node}</em>"
+        when :monospace then "<code>#{escape node.text}</code>"
+        else inline(node.text.to_s)
         end
-        escaped = escaped.gsub(/\b(https?:\/\/[^\s<]+)/, '<a href="\1">\1</a>')
-        escaped = escaped.gsub(/\*([^*]+)\*/, '<strong>\1</strong>')
-        escaped = escaped.gsub(/_([^_]+)_/, '<em>\1</em>')
-        escaped.gsub(/`([^`]+)`/, '<code>\1</code>').gsub(/\0(\d+)\0/) { links[Regexp.last_match(1).to_i] }
+      end
+
+      def node_children(node)
+        node.children.reject { |child| inline_context?(child.context) }
+      end
+
+      def inline_nodes(node)
+        node.children.select { |child| inline_context?(child.context) }
+      end
+
+      def inline_context?(context)
+        %i[text link strong emphasis monospace].include?(context)
       end
 
       def doctype

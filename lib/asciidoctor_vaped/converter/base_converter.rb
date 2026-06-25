@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../parser/inline"
+
 module AsciidoctorVaped
   module Converter
     class BaseConverter

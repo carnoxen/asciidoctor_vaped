@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base_block"
+require_relative "base_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class BlockTitle < BaseBlock
+    module Blocks
+      class BlockTitle < BaseNode
         PATTERN = /\A\.([^.\s].*)\z/
 
         def match?(context)

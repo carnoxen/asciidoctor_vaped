@@ -5,7 +5,7 @@ module AsciidoctorVaped
     class DocBook < BaseConverter
       def convert(document)
         title = document.doctitle || "Untitled"
-        body = document.blocks.map { |block| convert_node(block) }.join("\n")
+        body = node_children(document).map { |child| convert_node(child) }.join("\n")
         %(<article>\n<title>#{escape title}</title>\n#{body}\n</article>)
       end
 
@@ -14,7 +14,7 @@ module AsciidoctorVaped
       def convert_node(node)
         case node.context
         when :section then section(node)
-        when :paragraph then "<para>#{inline node.text}</para>"
+        when :paragraph then "<para>#{inline node}</para>"
         when :listing then listing(node)
         when :literal then "<literallayout>#{escape node.text}</literallayout>"
         when :ulist then list(node, "itemizedlist")
@@ -29,8 +29,8 @@ module AsciidoctorVaped
       end
 
       def section(node)
-        body = node.blocks.map { |block| convert_node(block) }.join("\n")
-        %(<section>\n<title>#{inline node.text}</title>\n#{body}\n</section>)
+        body = node_children(node).map { |child| convert_node(child) }.join("\n")
+        %(<section>\n<title>#{inline node}</title>\n#{body}\n</section>)
       end
 
       def listing(node)
@@ -40,13 +40,13 @@ module AsciidoctorVaped
       end
 
       def list(node, tag)
-        items = node.blocks.map { |item| "<listitem><para>#{inline item.text}</para></listitem>" }.join("\n")
+        items = node.children.map { |item| "<listitem><para>#{inline item}</para></listitem>" }.join("\n")
         "<#{tag}>\n#{items}\n</#{tag}>"
       end
 
       def table(node)
-        rows = node.blocks.map do |row|
-          cells = row.blocks.map { |cell| "<entry>#{inline cell.text}</entry>" }.join
+        rows = node.children.map do |row|
+          cells = row.children.map { |cell| "<entry>#{inline cell}</entry>" }.join
           "<row>#{cells}</row>"
         end.join("\n")
         "<informaltable>\n<tgroup cols=\"#{column_count node}\">\n<tbody>\n#{rows}\n</tbody>\n</tgroup>\n</informaltable>"
@@ -54,24 +54,46 @@ module AsciidoctorVaped
 
       def admonition(node)
         name = node.attributes.fetch(:name, "note").to_s.downcase
-        "<#{name}><para>#{inline node.text}</para></#{name}>"
+        "<#{name}><para>#{inline node}</para></#{name}>"
       end
 
       def titled_block(tag, node)
         title = node.attributes[:title] ? "<title>#{inline node.attributes[:title]}</title>\n" : ""
-        "<#{tag}>\n#{title}<para>#{inline node.text}</para>\n</#{tag}>"
+        "<#{tag}>\n#{title}<para>#{inline node}</para>\n</#{tag}>"
       end
 
       def column_count(node)
-        node.blocks.map { |row| row.blocks.length }.max || 1
+        node.children.map { |row| row.children.length }.max || 1
       end
 
-      def inline(text)
-        escape(text.to_s)
-          .gsub(%r{https?://[^\s\[]+\[([^\]]+)\]}) { %(<link xlink:href="#{escape_attr Regexp.last_match(0).split("[").first}">#{Regexp.last_match(1)}</link>) }
-          .gsub(/\*([^*]+)\*/, '<emphasis role="strong">\1</emphasis>')
-          .gsub(/_([^_]+)_/, '<emphasis>\1</emphasis>')
-          .gsub(/`([^`]+)`/, '<literal>\1</literal>')
+      def inline(value)
+        nodes = value.respond_to?(:children) ? inline_nodes(value) : Parser::Inline.parse(value)
+        return escape(value.text.to_s) if nodes.empty? && value.respond_to?(:text)
+
+        nodes.map { |node| inline_node(node) }.join
+      end
+
+      def inline_node(node)
+        case node.context
+        when :text then escape(node.text)
+        when :link then %(<link xlink:href="#{escape_attr node.attributes.fetch(:target)}">#{inline node}</link>)
+        when :strong then %(<emphasis role="strong">#{inline node}</emphasis>)
+        when :emphasis then "<emphasis>#{inline node}</emphasis>"
+        when :monospace then "<literal>#{escape node.text}</literal>"
+        else inline(node.text.to_s)
+        end
+      end
+
+      def node_children(node)
+        node.children.reject { |child| inline_context?(child.context) }
+      end
+
+      def inline_nodes(node)
+        node.children.select { |child| inline_context?(child.context) }
+      end
+
+      def inline_context?(context)
+        %i[text link strong emphasis monospace].include?(context)
       end
     end
   end

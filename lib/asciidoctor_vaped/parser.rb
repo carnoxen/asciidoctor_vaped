@@ -2,31 +2,32 @@
 
 require_relative "ast/document"
 require_relative "ast/node"
-require_relative "parser/block_handlers"
+require_relative "parser/blocks"
 require_relative "parser/context"
+require_relative "parser/inline"
 require_relative "reader"
 
 module AsciidoctorVaped
   module Parser
-    BLOCK_HANDLERS = [
-      BlockHandlers::BlankLine,
-      BlockHandlers::AttributeEntry,
-      BlockHandlers::BlockTitle,
-      BlockHandlers::AttributeList,
-      BlockHandlers::Comment,
-      BlockHandlers::Section,
-      BlockHandlers::Listing,
-      BlockHandlers::Literal,
-      BlockHandlers::Example,
-      BlockHandlers::Quote,
-      BlockHandlers::Sidebar,
-      BlockHandlers::Table,
-      BlockHandlers::Admonition,
-      BlockHandlers::UnorderedList,
-      BlockHandlers::OrderedList,
-      BlockHandlers::Paragraph
+    NODE_HANDLERS = [
+      Blocks::BlankLine,
+      Blocks::AttributeEntry,
+      Blocks::BlockTitle,
+      Blocks::AttributeList,
+      Blocks::Comment,
+      Blocks::Section,
+      Blocks::Listing,
+      Blocks::Literal,
+      Blocks::Example,
+      Blocks::Quote,
+      Blocks::Sidebar,
+      Blocks::Table,
+      Blocks::Admonition,
+      Blocks::UnorderedList,
+      Blocks::OrderedList,
+      Blocks::Paragraph
     ].freeze
-    BLOCK_CHAIN = BlockHandlers.chain(BLOCK_HANDLERS)
+    NODE_CHAIN = Blocks.chain(NODE_HANDLERS)
 
     module_function
 
@@ -34,7 +35,7 @@ module AsciidoctorVaped
       document = AST::Document.new(source.to_s, attributes:)
       context = Context.new(document, Reader.new(source))
       parse_header(context)
-      parse_blocks(context)
+      parse_nodes(context)
       document
     end
 
@@ -44,14 +45,14 @@ module AsciidoctorVaped
       parse_document_title(context)
     end
 
-    def parse_blocks(context)
+    def parse_nodes(context)
       until context.reader.eof?
-        BLOCK_CHAIN.handle(context)
+        NODE_CHAIN.handle(context)
       end
     end
 
     def parse_header_attributes(context)
-      handler = BlockHandlers::AttributeEntry.new
+      handler = Blocks::AttributeEntry.new
       handler.handle(context) while handler.match?(context)
     end
 

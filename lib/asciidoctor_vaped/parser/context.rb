@@ -12,9 +12,9 @@ module AsciidoctorVaped
         @pending_attributes = {}
       end
 
-      def append(block)
-        block.attributes.merge!(consume_attributes)
-        parent << block
+      def append(node)
+        node.attributes.merge!(consume_attributes)
+        parent << node
       end
 
       def open_section(section)

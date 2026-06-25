@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base_block"
+require_relative "base_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class DelimitedBlock < BaseBlock
+    module Blocks
+      class DelimitedNode < BaseNode
         def match?(context)
           context.reader.peek == delimiter
         end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "delimited_block"
+require_relative "delimited_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class Quote < DelimitedBlock
+    module Blocks
+      class Quote < DelimitedNode
         def delimiter = "____"
         def context_name = :quote
       end

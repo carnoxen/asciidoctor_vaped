@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "delimited_block"
+require_relative "delimited_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class Sidebar < DelimitedBlock
+    module Blocks
+      class Sidebar < DelimitedNode
         def delimiter = "****"
         def context_name = :sidebar
       end

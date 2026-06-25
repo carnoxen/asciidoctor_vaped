@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "delimited_block"
+require_relative "delimited_node"
 
 module AsciidoctorVaped
   module Parser
-    module BlockHandlers
-      class Example < DelimitedBlock
+    module Blocks
+      class Example < DelimitedNode
         def delimiter = "===="
         def context_name = :example
       end

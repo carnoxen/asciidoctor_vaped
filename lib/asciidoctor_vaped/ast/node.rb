@@ -3,24 +3,39 @@
 module AsciidoctorVaped
   module AST
     class Node
-      attr_reader :context, :attributes, :blocks
+      attr_reader :context, :attributes, :children
       attr_accessor :parent, :text
 
-      def initialize(context, text: nil, attributes: {})
+      def initialize(context, text: nil, attributes: {}, children: [], inline: false)
         @context = context
         @text = text
         @attributes = attributes
-        @blocks = []
+        @children = []
+        append_children(children)
+        parse_inline if inline
       end
 
-      def <<(block)
-        block.parent = self
-        blocks << block
-        block
+      def <<(node)
+        append(node)
+      end
+
+      def append(node)
+        node.parent = self
+        children << node
+        node
+      end
+
+      def append_children(nodes)
+        nodes.each { |node| append(node) }
+        self
+      end
+
+      def parse_inline
+        append_children(Parser::Inline.parse(text))
       end
 
       def sections
-        blocks.select { |block| block.context == :section }
+        children.select { |child| child.context == :section }
       end
 
       def to_h
@@ -28,7 +43,7 @@ module AsciidoctorVaped
           context:,
           text:,
           attributes:,
-          blocks: blocks.map(&:to_h)
+          children: children.map(&:to_h)
         }
       end
     end
