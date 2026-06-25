@@ -8,10 +8,6 @@ module AsciidoctorVaped
       class BlockTitle < BaseNode
         PATTERN = /\A\.([^.\s].*)\z/
 
-        def match?(context)
-          context.reader.peek&.match?(PATTERN)
-        end
-
         def parse(context)
           context.pending_title = context.reader.read.match(PATTERN)[1]
         end

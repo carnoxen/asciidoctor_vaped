@@ -25,7 +25,8 @@ module AsciidoctorVaped
         when :example then block("exampleblock", node)
         when :quote then block("quoteblock", node)
         when :sidebar then block("sidebarblock", node)
-        when :open then node_children(node).map { |child| convert_node(child) }.join("\n")
+        when :pass then node.text.to_s
+        when :open then open(node)
         else inline(node.text.to_s)
         end
       end
@@ -67,6 +68,13 @@ module AsciidoctorVaped
         children = node_children(node)
         body = children.empty? ? inline(node) : children.map { |child| convert_node(child) }.join("\n")
         %(<div class="#{class_name}">\n#{title node}\n<div class="content">#{body}</div>\n</div>)
+      end
+
+      def open(node)
+        children = node_children(node)
+        return inline(node) if children.empty?
+
+        children.map { |child| convert_node(child) }.join("\n")
       end
 
       def title(node)

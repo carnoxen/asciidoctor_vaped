@@ -6,6 +6,10 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class ListBase < BaseNode
+        def match?(context)
+          context.reader.peek&.match?(pattern)
+        end
+
         def parse(context)
           list = AST::Node.new(list_context)
           read_items(context).each { |item| list << item }

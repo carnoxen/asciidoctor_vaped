@@ -7,7 +7,7 @@ module AsciidoctorVaped
     module Blocks
       class Sidebar < DelimitedNode
         def delimiter = "****"
-        def context_name = :sidebar
+        def default_context_name = :sidebar
       end
     end
   end

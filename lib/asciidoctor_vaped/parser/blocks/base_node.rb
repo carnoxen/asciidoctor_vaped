@@ -13,6 +13,10 @@ module AsciidoctorVaped
 
           @successor&.handle(context)
         end
+
+        def match?(context)
+          context.reader.peek&.match?(self.class::PATTERN)
+        end
       end
     end
   end

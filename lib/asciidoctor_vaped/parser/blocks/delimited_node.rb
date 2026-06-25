@@ -7,16 +7,36 @@ module AsciidoctorVaped
     module Blocks
       class DelimitedNode < BaseNode
         def match?(context)
-          context.reader.peek == delimiter
+          delimiters.include?(context.reader.peek)
         end
 
         def parse(context)
-          lines = context.reader.read_delimited(delimiter)
-          context.append AST::Node.new(context_name, text: lines.join("\n"), attributes:)
+          lines = context.reader.read_delimited(context.reader.peek)
+          context.append AST::Node.new(context_name(context), text: lines.join("\n"), attributes: attributes(context))
         end
 
-        def attributes
-          {}
+        def delimiters
+          [delimiter]
+        end
+
+        def attributes(context)
+          return {} unless admonition?(context)
+
+          { name: context.pending_attributes[:style].to_s.upcase }
+        end
+
+        def context_name(context)
+          admonition?(context) ? :admonition : default_context_name
+        end
+
+        private
+
+        def admonition?(context)
+          context.pending_attributes[:style]&.to_s&.match?(/\A(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\z/i)
+        end
+
+        def default_context_name
+          raise NotImplementedError, "#{self.class} must implement #default_context_name"
         end
       end
     end

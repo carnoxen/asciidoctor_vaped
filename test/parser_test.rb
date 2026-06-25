@@ -117,6 +117,55 @@ class ParserTest < Minitest::Test
     assert_equal "WARNING", warning.attributes[:name]
   end
 
+  def test_parses_common_quick_reference_delimited_blocks
+    document = AsciidoctorVaped.parse <<~ADOC
+      ****
+      sidebar
+      ****
+
+      ____
+      quote
+      ____
+
+      ++++
+      <raw>passthrough</raw>
+      ++++
+
+      --
+      open block
+      --
+
+      [NOTE]
+      ====
+      compound note
+      ====
+    ADOC
+
+    sidebar, quote, pass, open, note = document.children
+
+    assert_equal :sidebar, sidebar.context
+    assert_equal :quote, quote.context
+    assert_equal :pass, pass.context
+    assert_equal :open, open.context
+    assert_equal :admonition, note.context
+    assert_equal "NOTE", note.attributes[:name]
+  end
+
+  def test_converts_passthrough_and_open_blocks
+    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
+      +++
+      <strong>raw</strong>
+      +++
+
+      --
+      open block
+      --
+    ADOC
+
+    assert_includes html, "<strong>raw</strong>"
+    assert_includes html, "open block"
+  end
+
   def test_parses_quick_reference_document_title_and_attributes
     document = AsciidoctorVaped.parse <<~ADOC
       :toc: left

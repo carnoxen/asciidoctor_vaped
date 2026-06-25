@@ -11,9 +11,9 @@ module AsciidoctorVaped
   module Parser
     NODE_HANDLERS = [
       Blocks::BlankLine,
-      Blocks::AttributeEntry,
+      Blocks::DocumentAttribute,
       Blocks::BlockTitle,
-      Blocks::AttributeList,
+      Blocks::ElementAttributes,
       Blocks::Comment,
       Blocks::Section,
       Blocks::Listing,
@@ -21,6 +21,8 @@ module AsciidoctorVaped
       Blocks::Example,
       Blocks::Quote,
       Blocks::Sidebar,
+      Blocks::Open,
+      Blocks::Passthrough,
       Blocks::Table,
       Blocks::Admonition,
       Blocks::UnorderedList,
@@ -52,7 +54,7 @@ module AsciidoctorVaped
     end
 
     def parse_header_attributes(context)
-      handler = Blocks::AttributeEntry.new
+      handler = Blocks::DocumentAttribute.new
       handler.handle(context) while handler.match?(context)
     end
 

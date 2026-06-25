@@ -7,7 +7,7 @@ module AsciidoctorVaped
     module Blocks
       class Quote < DelimitedNode
         def delimiter = "____"
-        def context_name = :quote
+        def default_context_name = :quote
       end
     end
   end

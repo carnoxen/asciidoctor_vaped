@@ -5,9 +5,9 @@ require_relative "delimited_node"
 module AsciidoctorVaped
   module Parser
     module Blocks
-      class Example < DelimitedNode
-        def delimiter = "===="
-        def default_context_name = :example
+      class Passthrough < DelimitedNode
+        def delimiters = %w[+++ ++++]
+        def default_context_name = :pass
       end
     end
   end

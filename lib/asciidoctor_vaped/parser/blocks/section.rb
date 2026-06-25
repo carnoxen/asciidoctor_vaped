@@ -8,10 +8,6 @@ module AsciidoctorVaped
       class Section < BaseNode
         PATTERN = /\A(=+)\s+(.+)\z/
 
-        def match?(context)
-          context.reader.peek&.match?(PATTERN)
-        end
-
         def parse(context)
           markers, title = context.reader.read.match(PATTERN).captures
           level = [markers.length - 1, 1].max

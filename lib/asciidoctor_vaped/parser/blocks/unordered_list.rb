@@ -6,10 +6,6 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class UnorderedList < ListBase
-        def match?(context)
-          context.reader.peek&.match?(pattern)
-        end
-
         private
 
         def list_context = :ulist

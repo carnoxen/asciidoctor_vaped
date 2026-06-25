@@ -6,12 +6,8 @@ require "strscan"
 module AsciidoctorVaped
   module Parser
     module Blocks
-      class AttributeList < BaseNode
+      class ElementAttributes < BaseNode
         PATTERN = /\A\[(.+)\]\z/
-
-        def match?(context)
-          context.reader.peek&.match?(PATTERN)
-        end
 
         def parse(context)
           context.add_pending_attributes parse_attributes(context.reader.read.match(PATTERN)[1])

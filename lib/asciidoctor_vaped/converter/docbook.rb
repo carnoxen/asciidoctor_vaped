@@ -24,6 +24,8 @@ module AsciidoctorVaped
         when :example then titled_block("example", node)
         when :quote then titled_block("blockquote", node)
         when :sidebar then titled_block("sidebar", node)
+        when :pass then node.text.to_s
+        when :open then inline(node.text.to_s)
         else inline(node.text.to_s)
         end
       end

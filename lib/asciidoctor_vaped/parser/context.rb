@@ -3,7 +3,7 @@
 module AsciidoctorVaped
   module Parser
     class Context
-      attr_reader :document, :reader
+      attr_reader :document, :reader, :pending_attributes
 
       def initialize(document, reader)
         @document = document

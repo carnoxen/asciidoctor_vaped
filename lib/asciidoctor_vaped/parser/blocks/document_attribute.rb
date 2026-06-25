@@ -5,12 +5,8 @@ require_relative "base_node"
 module AsciidoctorVaped
   module Parser
     module Blocks
-      class AttributeEntry < BaseNode
+      class DocumentAttribute < BaseNode
         PATTERN = /\A:([^:\s][^:]*):\s*(.*)\z/
-
-        def match?(context)
-          context.reader.peek&.match?(PATTERN)
-        end
 
         def parse(context)
           name, value = context.reader.read.match(PATTERN).captures
