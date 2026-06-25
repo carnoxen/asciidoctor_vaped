@@ -89,7 +89,7 @@ class ParserTest < Minitest::Test
     refute_includes html, "<li><p>Protons</p></li>"
     assert_includes html, '<pre class="highlight"><code class="language-ruby" data-lang="ruby">'
     assert_includes html, '<table class="tableblock frame-all grid-all stretch">'
-    assert_includes html, "<tr>\n<td class=\"tableblock halign-left valign-top\"><p class=\"tableblock\">Firefox</p></td>\n<td class=\"tableblock halign-left valign-top\"><p class=\"tableblock\">Browser</p></td>\n</tr>"
+    assert_includes html, "<tr>\n<td class=\"tableblock halign-left valign-top\">Firefox</td>\n<td class=\"tableblock halign-left valign-top\">Browser</td>\n</tr>"
     assert_includes html, '<td class="icon">'
   end
 

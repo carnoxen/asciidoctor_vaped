@@ -55,7 +55,7 @@ module AsciidoctorVaped
       end
 
       def table_row(row)
-        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top"><p class="tableblock">#{inline cell}</p></td>) }
+        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top">#{inline cell}</td>) }
         "<tr>\n#{cells.join("\n")}\n</tr>"
       end
 
