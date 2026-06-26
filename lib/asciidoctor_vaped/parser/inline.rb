@@ -24,7 +24,7 @@ module AsciidoctorVaped
       end
 
       def text_node(text)
-        AST::Node.new(:text, text:)
+        AST::Text.new(text)
       end
 
       def parse_until_done(text)
@@ -53,7 +53,7 @@ module AsciidoctorVaped
       end
 
       def container(context, text, attributes = {})
-        AST::Node.new(context, text:, attributes:, inline: true)
+        AST::Element.new(context, attributes:, children: parse(text))
       end
     end
   end

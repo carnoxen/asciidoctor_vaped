@@ -12,7 +12,7 @@ module AsciidoctorVaped
         end
 
         def parse(context)
-          list = AST::Node.new(list_context)
+          list = AST::Element.new(list_context)
           item_context = context.nested(list)
           item_chain.handle(item_context) while match?(context)
           context.append(list)

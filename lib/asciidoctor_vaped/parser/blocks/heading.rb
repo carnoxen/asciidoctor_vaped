@@ -11,7 +11,7 @@ module AsciidoctorVaped
         def parse(context)
           markers, title = context.reader.read.match(PATTERN).captures
           level = [markers.length - 1, 1].max
-          context.open_section AST::Node.new(:section, text: title, attributes: { level: }, inline: true)
+          context.open_section AST::Element.new(:section, attributes: { level: }, children: Inline.parse(title))
         end
       end
     end

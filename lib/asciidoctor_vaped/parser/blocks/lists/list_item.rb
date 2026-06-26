@@ -16,7 +16,7 @@ module AsciidoctorVaped
         end
 
         def parse(context)
-          context.append AST::Node.new(:list_item, text: context.reader.read.sub(@pattern, ""), inline: true)
+          context.append AST::Element.new(:list_item, children: Inline.parse(context.reader.read.sub(@pattern, "")))
         end
       end
     end

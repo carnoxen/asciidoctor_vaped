@@ -11,7 +11,7 @@ module AsciidoctorVaped
         end
 
         def self.node(token)
-          AST::Node.new(:link, text: token, attributes: { target: token })
+          Inline.container(:link, token, target: token)
         end
       end
     end

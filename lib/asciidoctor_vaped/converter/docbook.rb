@@ -33,7 +33,7 @@ module AsciidoctorVaped
       end
 
       def open(node)
-        render_text(node.text.to_s)
+        render_content(node)
       end
 
       def list(node)
@@ -52,7 +52,7 @@ module AsciidoctorVaped
 
       def admonition(node)
         name = node.attributes.fetch(:name, "note").to_s.downcase
-        "<#{name}><para>#{render_text node}</para></#{name}>"
+        "<#{name}>#{paragraph_content node}</#{name}>"
       end
 
       def example(node)
@@ -69,7 +69,11 @@ module AsciidoctorVaped
 
       def titled_node(tag_name, node)
         title = node.attributes[:title] ? "<title>#{render_text node.attributes[:title]}</title>\n" : ""
-        "<#{tag_name}>\n#{title}<para>#{render_text node}</para>\n</#{tag_name}>"
+        "<#{tag_name}>\n#{title}#{paragraph_content node}\n</#{tag_name}>"
+      end
+
+      def paragraph_content(node)
+        child_nodes(node).empty? ? "<para>#{render_text node}</para>" : render_nodes(node)
       end
 
       def column_count(node)

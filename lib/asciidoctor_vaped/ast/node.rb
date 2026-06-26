@@ -3,16 +3,14 @@
 module AsciidoctorVaped
   module AST
     class Node
-      attr_reader :context, :attributes, :children
-      attr_accessor :parent, :text
+      TEXT_CONTEXTS = %i[text link strong emphasis monospace].freeze
 
-      def initialize(context, text: nil, attributes: {}, children: [], inline: false)
-        @context = context
-        @text = text
-        @attributes = attributes
+      attr_reader :children
+      attr_accessor :parent
+
+      def initialize(children: [])
         @children = []
         append_children(children)
-        parse_inline if inline
       end
 
       def <<(node)
@@ -28,6 +26,10 @@ module AsciidoctorVaped
       def append_children(nodes)
         nodes.each { |node| append(node) }
         self
+      end
+
+      def text
+        children.select { |child| TEXT_CONTEXTS.include?(child.context) }.map(&:text).join
       end
 
       def parse_inline

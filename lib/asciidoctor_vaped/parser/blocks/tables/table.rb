@@ -10,7 +10,7 @@ module AsciidoctorVaped
         def delimiter = "|==="
 
         def parse(context)
-          table = AST::Node.new(:table)
+          table = AST::Element.new(:table)
           rows(context.reader.read_delimited(delimiter)).each { |cells| table << TableRow.build(cells) }
           context.append(table)
         end

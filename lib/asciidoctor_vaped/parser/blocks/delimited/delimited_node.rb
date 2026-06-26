@@ -12,8 +12,7 @@ module AsciidoctorVaped
 
         def parse(context)
           lines = context.reader.read_delimited(context.reader.peek)
-          node = AST::Node.new(context_name(context), text: lines.join("\n"), attributes: attributes(context))
-          parse_children(context, node, lines) if compound?(context)
+          node = build_node(context, lines)
           context.append node
         end
 
@@ -33,8 +32,17 @@ module AsciidoctorVaped
 
         private
 
-        def parse_children(context, node, lines)
+        def build_node(context, lines)
+          text = lines.join("\n")
+          return AST::Element.new(context_name(context), attributes: attributes(context), children: parse_children(context, lines)) if compound?(context)
+
+          AST::Element.new(context_name(context), attributes: attributes(context), children: [Inline.text_node(text)])
+        end
+
+        def parse_children(context, lines)
+          node = AST::Element.new(context_name(context), attributes: attributes(context))
           Parser.parse_nodes context.nested(node, Reader.new(lines.join("\n")))
+          node.children
         end
 
         def compound?(context)

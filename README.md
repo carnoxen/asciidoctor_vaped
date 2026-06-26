@@ -1,8 +1,8 @@
 # AsciidoctorVaped
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/asciidoctor_vaped`. To experiment with that code, run `bin/console` for an interactive prompt.
+I vibed this project inspired from Asciidoctor. It has a long history,
+but I can't read lots of if-else statements. So, I made this.
+It is still in development. Be careful to use.
 
 ## Installation
 
@@ -22,7 +22,16 @@ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 
 ## Usage
 
-TODO: Write usage instructions here
+```sh
+# just print a html file from adoc file.
+asciidoctor_vaped demo.adoc
+
+# this can accept a text.
+asciidoctor_vaped -s 'hello *world*'
+
+# or print something different like docbook.
+asciidoctor_vaped demo.adoc demo.dkb
+```
 
 ## Development
 

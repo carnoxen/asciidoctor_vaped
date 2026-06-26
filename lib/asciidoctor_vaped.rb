@@ -2,8 +2,10 @@
 
 require_relative "asciidoctor_vaped/version"
 require_relative "asciidoctor_vaped/error"
-require_relative "asciidoctor_vaped/ast/document"
 require_relative "asciidoctor_vaped/ast/node"
+require_relative "asciidoctor_vaped/ast/element"
+require_relative "asciidoctor_vaped/ast/text"
+require_relative "asciidoctor_vaped/ast/document"
 require_relative "asciidoctor_vaped/converter"
 require_relative "asciidoctor_vaped/parser"
 require_relative "asciidoctor_vaped/reader"

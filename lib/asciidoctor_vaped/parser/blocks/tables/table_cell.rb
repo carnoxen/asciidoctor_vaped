@@ -5,7 +5,7 @@ module AsciidoctorVaped
     module Blocks
       class TableCell
         def self.build(text)
-          AST::Node.new(:table_cell, text:, inline: true)
+          AST::Element.new(:table_cell, children: Inline.parse(text))
         end
       end
     end

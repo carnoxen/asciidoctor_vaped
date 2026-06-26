@@ -10,7 +10,7 @@ module AsciidoctorVaped
 
         def parse(context)
           name, text = context.reader.read.match(PATTERN).captures
-          context.append AST::Node.new(:admonition, text:, attributes: { name: }, inline: true)
+          context.append AST::Element.new(:admonition, attributes: { name: }, children: Inline.parse(text))
         end
       end
     end

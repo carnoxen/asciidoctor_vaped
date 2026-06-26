@@ -7,7 +7,7 @@ module AsciidoctorVaped
     module Blocks
       class TableRow
         def self.build(cells)
-          AST::Node.new(:table_row, children: cells.map { |cell| TableCell.build(cell) })
+          AST::Element.new(:table_row, children: cells.map { |cell| TableCell.build(cell) })
         end
       end
     end

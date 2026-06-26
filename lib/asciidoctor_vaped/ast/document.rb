@@ -6,10 +6,16 @@ module AsciidoctorVaped
   module AST
     class Document < Node
       attr_accessor :doctitle
+      attr_reader :attributes
 
       def initialize(source, attributes: {})
-        super(:document, attributes: attributes.dup)
+        @attributes = attributes.dup
         @source = source
+        super()
+      end
+
+      def context
+        :document
       end
 
       def source

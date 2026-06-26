@@ -12,7 +12,7 @@ module AsciidoctorVaped
 
         def parse(context)
           lines = context.reader.read_until_blank
-          context.append AST::Node.new(:paragraph, text: lines.join("\n"), inline: true)
+          context.append AST::Element.new(:paragraph, children: Inline.parse(lines.join("\n")))
         end
       end
     end

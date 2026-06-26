@@ -15,6 +15,8 @@ class ParserTest < Minitest::Test
     ADOC
 
     assert_kind_of AsciidoctorVaped::AST::Document, document
+    assert_kind_of AsciidoctorVaped::AST::Node, document
+    refute_kind_of AsciidoctorVaped::AST::Element, document
     assert_equal "Document Title", document.doctitle
     assert_equal "", document.attributes["toc"]
     assert_equal "Section Title", document.sections.first.text
@@ -40,6 +42,10 @@ class ParserTest < Minitest::Test
     paragraph = document.children.first
 
     assert_equal :paragraph, paragraph.context
+    assert_kind_of AsciidoctorVaped::AST::Element, paragraph
+    assert_kind_of AsciidoctorVaped::AST::Text, paragraph.children.first
+    assert_equal "A ", paragraph.children.first.value
+    refute_respond_to paragraph.children.first, :attributes
     assert_equal %i[text strong text emphasis text monospace text link text], paragraph.children.map(&:context)
     assert_equal "strong", paragraph.children[1].text
     assert_equal "emphasis", paragraph.children[3].text
@@ -47,6 +53,23 @@ class ParserTest < Minitest::Test
     assert_equal "https://asciidoctor.org", paragraph.children[7].attributes[:target]
     assert_equal "Asciidoctor", paragraph.children[7].text
     assert_same paragraph, paragraph.children[1].parent
+  end
+
+  def test_parse_treats_plain_text_as_nodes
+    document = AsciidoctorVaped.parse <<~ADOC
+      Paragraph text.
+
+      ----
+      Listing text.
+      ----
+    ADOC
+
+    paragraph, listing = document.children
+
+    assert_equal [:text], paragraph.children.map(&:context)
+    assert_equal [:text], listing.children.map(&:context)
+    assert_equal "Paragraph text.", paragraph.text
+    assert_equal "Listing text.", listing.text
   end
 
   def test_parse_chains_list_items_to_inline_nodes
@@ -99,6 +122,17 @@ class ParserTest < Minitest::Test
     assert_includes html, '<div class="quoteblock">'
     assert_includes html, "<p>Quote with <strong>strong</strong> text.</p>"
     assert_includes html, "<li>Nested item</li>"
+  end
+
+  def test_convert_docbook_renders_compound_blocks_from_child_structure
+    docbook = AsciidoctorVaped.convert <<~ADOC, backend: :docbook
+      ____
+      Quote with *strong* text.
+      ____
+    ADOC
+
+    assert_includes docbook, "<blockquote>"
+    assert_includes docbook, "<para>Quote with <emphasis role=\"strong\">strong</emphasis> text.</para>"
   end
 
   def test_convert_handles_quick_reference_block_examples_without_dependency

@@ -11,7 +11,7 @@ module AsciidoctorVaped
         end
 
         def self.node(token)
-          AST::Node.new(:monospace, text: token[1...-1])
+          Inline.container(:monospace, token[1...-1])
         end
       end
     end
