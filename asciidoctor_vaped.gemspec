@@ -10,12 +10,12 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Reshaped Asciidoctor inspired by the original."
   spec.description = "A reshaped version of Asciidoctor with a modern twist."
-  spec.homepage = "https://github.com/asciidoctor/asciidoctor_vaped"
+  spec.homepage = "https://github.com/carnoxen/asciidoctor_vaped"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/asciidoctor/asciidoctor_vaped.git"
+  spec.metadata["source_code_uri"] = "https://github.com/carnoxen/asciidoctor_vaped.git"
 
   # Uncomment the line below to require MFA for gem pushes.
   # This helps protect your gem from supply chain attacks by ensuring
