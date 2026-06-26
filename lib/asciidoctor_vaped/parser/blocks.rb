@@ -1,32 +1,38 @@
 # frozen_string_literal: true
 
-require_relative "blocks/base_node"
-require_relative "blocks/blank_line"
-require_relative "blocks/document_attribute"
-require_relative "blocks/block_title"
-require_relative "blocks/element_attributes"
-require_relative "blocks/comment"
-require_relative "blocks/section"
-require_relative "blocks/delimited_node"
-require_relative "blocks/listing"
-require_relative "blocks/literal"
-require_relative "blocks/example"
-require_relative "blocks/quote"
-require_relative "blocks/sidebar"
-require_relative "blocks/open"
-require_relative "blocks/passthrough"
-require_relative "blocks/table"
+require_relative "blocks/common/base_node"
+require_relative "blocks/common/blank_line"
+require_relative "blocks/common/comment"
+require_relative "blocks/metadata/document_attribute"
+require_relative "blocks/metadata/caption"
+require_relative "blocks/metadata/element_attributes"
+require_relative "blocks/heading"
+require_relative "blocks/delimited/delimited_node"
+require_relative "blocks/delimited/listing"
+require_relative "blocks/delimited/literal"
+require_relative "blocks/delimited/example"
+require_relative "blocks/delimited/quote"
+require_relative "blocks/delimited/sidebar"
+require_relative "blocks/delimited/open"
+require_relative "blocks/delimited/passthrough"
+require_relative "blocks/tables/table_cell"
+require_relative "blocks/tables/table_row"
+require_relative "blocks/tables/table"
 require_relative "blocks/admonition"
-require_relative "blocks/list_base"
-require_relative "blocks/unordered_list"
-require_relative "blocks/ordered_list"
+require_relative "blocks/lists/list_item"
+require_relative "blocks/lists/list_base"
+require_relative "blocks/lists/unordered_list"
+require_relative "blocks/lists/ordered_list"
 require_relative "blocks/paragraph"
 
 module AsciidoctorVaped
   module Parser
     module Blocks
       def self.chain(handlers)
-        handlers.reverse.inject(nil) { |successor, handler| handler.new(successor) }
+        handlers.reverse.inject(nil) do |successor, handler|
+          handler, kwargs = handler
+          handler.new(successor, **(kwargs || {}))
+        end
       end
     end
   end

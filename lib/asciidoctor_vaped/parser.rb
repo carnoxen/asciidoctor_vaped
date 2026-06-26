@@ -12,10 +12,10 @@ module AsciidoctorVaped
     NODE_HANDLERS = [
       Blocks::BlankLine,
       Blocks::DocumentAttribute,
-      Blocks::BlockTitle,
+      Blocks::Caption,
       Blocks::ElementAttributes,
       Blocks::Comment,
-      Blocks::Section,
+      Blocks::Heading,
       Blocks::Listing,
       Blocks::Literal,
       Blocks::Example,

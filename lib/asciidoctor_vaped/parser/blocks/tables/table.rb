@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "delimited_node"
+require_relative "../delimited/delimited_node"
+require_relative "table_row"
 
 module AsciidoctorVaped
   module Parser
@@ -10,7 +11,7 @@ module AsciidoctorVaped
 
         def parse(context)
           table = AST::Node.new(:table)
-          rows(context.reader.read_delimited(delimiter)).each { |cells| table << row(cells) }
+          rows(context.reader.read_delimited(delimiter)).each { |cells| table << TableRow.build(cells) }
           context.append(table)
         end
 
@@ -51,11 +52,6 @@ module AsciidoctorVaped
           line.sub(/\A\|/, "").split(/\s+\|/).map(&:strip)
         end
 
-        def row(cells)
-          AST::Node.new(:table_row).tap do |row|
-            cells.each { |cell| row << AST::Node.new(:table_cell, text: cell, inline: true) }
-          end
-        end
       end
     end
   end

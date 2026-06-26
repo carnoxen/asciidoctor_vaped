@@ -5,11 +5,16 @@ module AsciidoctorVaped
     class Context
       attr_reader :document, :reader, :pending_attributes
 
-      def initialize(document, reader)
+      def initialize(document, reader, parent: nil)
         @document = document
         @reader = reader
+        @parent = parent
         @sections = []
         @pending_attributes = {}
+      end
+
+      def nested(parent, reader = @reader)
+        self.class.new(document, reader, parent:)
       end
 
       def append(node)
@@ -39,7 +44,7 @@ module AsciidoctorVaped
       end
 
       def parent
-        @sections.last || document
+        @sections.last || @parent || document
       end
     end
   end

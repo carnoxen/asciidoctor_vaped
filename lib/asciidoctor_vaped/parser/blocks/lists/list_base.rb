@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "base_node"
+require_relative "../common/base_node"
+require_relative "list_item"
 
 module AsciidoctorVaped
   module Parser
@@ -12,16 +13,15 @@ module AsciidoctorVaped
 
         def parse(context)
           list = AST::Node.new(list_context)
-          read_items(context).each { |item| list << item }
+          item_context = context.nested(list)
+          item_chain.handle(item_context) while match?(context)
           context.append(list)
         end
 
         private
 
-        def read_items(context)
-          context.reader.read_while { |line| line.match?(pattern) }.map do |line|
-            AST::Node.new(:list_item, text: line.sub(pattern, ""), inline: true)
-          end
+        def item_chain
+          Blocks.chain([[ListItem, { pattern: }]])
         end
       end
     end

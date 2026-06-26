@@ -49,12 +49,56 @@ class ParserTest < Minitest::Test
     assert_same paragraph, paragraph.children[1].parent
   end
 
+  def test_parse_chains_list_items_to_inline_nodes
+    document = AsciidoctorVaped.parse <<~ADOC
+      * Use *strong* text
+    ADOC
+
+    item = document.children.first.children.first
+
+    assert_equal :list_item, item.context
+    assert_equal %i[text strong text], item.children.map(&:context)
+  end
+
+  def test_parse_chains_quote_blocks_to_child_blocks_and_inline_nodes
+    document = AsciidoctorVaped.parse <<~ADOC
+      ____
+      Quote with *strong* text.
+
+      * Nested item
+      ____
+    ADOC
+
+    quote = document.children.first
+    paragraph, list = quote.children
+
+    assert_equal :quote, quote.context
+    assert_equal :paragraph, paragraph.context
+    assert_equal %i[text strong text], paragraph.children.map(&:context)
+    assert_equal :ulist, list.context
+    assert_equal "Nested item", list.children.first.text
+  end
+
   def test_convert_renders_parsed_inline_nodes
     html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
       * Use *strong*, _emphasis_, and `code`
     ADOC
 
     assert_includes html, "<li>Use <strong>strong</strong>, <em>emphasis</em>, and <code>code</code></li>"
+  end
+
+  def test_convert_renders_compound_blocks_from_child_structure
+    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
+      ____
+      Quote with *strong* text.
+
+      * Nested item
+      ____
+    ADOC
+
+    assert_includes html, '<div class="quoteblock">'
+    assert_includes html, "<p>Quote with <strong>strong</strong> text.</p>"
+    assert_includes html, "<li>Nested item</li>"
   end
 
   def test_convert_handles_quick_reference_block_examples_without_dependency
@@ -93,7 +137,7 @@ class ParserTest < Minitest::Test
     assert_includes html, '<td class="icon">'
   end
 
-  def test_parses_quick_reference_block_titles_and_delimited_nodes
+  def test_parses_quick_reference_captions_and_delimited_nodes
     document = AsciidoctorVaped.parse <<~ADOC
       .Example Block
       ====
@@ -219,5 +263,21 @@ class ParserTest < Minitest::Test
     assert_equal "puts 'Hello, World!'", listing.text
     assert_equal ["Edgar Allan Poe", "Sheri S. Tepper"], unordered.children.map(&:text)
     assert_equal %w[Protons Electrons], ordered.children.map(&:text)
+  end
+
+  def test_parse_chains_table_rows_to_cells_to_inline_nodes
+    document = AsciidoctorVaped.parse <<~ADOC
+      |===
+      |Name |*Description*
+      |===
+    ADOC
+
+    row = document.children.first.children.first
+    name, description = row.children
+
+    assert_equal :table_row, row.context
+    assert_equal :table_cell, name.context
+    assert_equal :table_cell, description.context
+    assert_equal %i[strong], description.children.map(&:context)
   end
 end

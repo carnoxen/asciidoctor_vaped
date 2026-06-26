@@ -3,8 +3,26 @@
 module AsciidoctorVaped
   module Converter
     class HTML < BaseConverter
+      BLOCK_RENDERERS = {
+        section: :section,
+        paragraph: :paragraph,
+        listing: :listing,
+        literal: :literal,
+        ulist: :list,
+        olist: :list,
+        table: :table,
+        admonition: :admonition,
+        example: :example,
+        quote: :quote,
+        sidebar: :sidebar,
+        pass: :pass,
+        open: :open
+      }.freeze
+
+      INLINE_CONTEXTS = %i[text link strong emphasis monospace].freeze
+
       def convert(document)
-        body = node_children(document).map { |child| convert_node(child) }.join("\n")
+        body = render_blocks(document)
         return body if @options[:header_footer] == false
 
         [doctype, "<html>", head(document), "<body>", body, "</body>", "</html>"].join("\n")
@@ -13,29 +31,25 @@ module AsciidoctorVaped
       private
 
       def convert_node(node)
-        case node.context
-        when :section then section(node)
-        when :paragraph then %(<p>#{inline node}</p>)
-        when :listing then listing(node)
-        when :literal then %(<pre>#{escape node.text}</pre>)
-        when :ulist then list(node, "ul")
-        when :olist then list(node, "ol")
-        when :table then table(node)
-        when :admonition then admonition(node)
-        when :example then block("exampleblock", node)
-        when :quote then block("quoteblock", node)
-        when :sidebar then block("sidebarblock", node)
-        when :pass then node.text.to_s
-        when :open then open(node)
-        else inline(node.text.to_s)
-        end
+        send(BLOCK_RENDERERS.fetch(node.context, :fallback), node)
+      end
+
+      def render_blocks(node)
+        block_children(node).map { |child| convert_node(child) }.join("\n")
+      end
+
+      def render_body(node)
+        block_children(node).empty? ? render_inline(node) : render_blocks(node)
+      end
+
+      def paragraph(node)
+        %(<p>#{render_inline node}</p>)
       end
 
       def section(node)
         level = node.attributes.fetch(:level, 1)
         heading = "h#{[level + 1, 6].min}"
-        contents = node_children(node).map { |child| convert_node(child) }.join("\n")
-        %(<div class="sect#{level}">\n<#{heading}>#{inline node}</#{heading}>\n#{contents}\n</div>)
+        %(<div class="sect#{level}">\n<#{heading}>#{render_inline node}</#{heading}>\n#{render_blocks node}\n</div>)
       end
 
       def listing(node)
@@ -44,9 +58,18 @@ module AsciidoctorVaped
         %(<div class="listingblock">\n#{title node}\n<div class="content">\n<pre class="highlight"><code#{code_attrs}>#{escape node.text}</code></pre>\n</div>\n</div>)
       end
 
-      def list(node, tag)
-        items = node.children.map { |item| "<li>#{inline item}</li>" }.join("\n")
-        %(<div class="#{tag == "ul" ? "ulist" : "olist"}">\n<#{tag}>\n#{items}\n</#{tag}>\n</div>)
+      def literal(node)
+        %(<pre>#{escape node.text}</pre>)
+      end
+
+      def list(node)
+        tag = list_tag(node)
+        items = node.children.map { |item| list_item(item) }.join("\n")
+        %(<div class="#{node.context}">\n<#{tag}>\n#{items}\n</#{tag}>\n</div>)
+      end
+
+      def list_item(node)
+        "<li>#{render_body node}</li>"
       end
 
       def table(node)
@@ -55,36 +78,51 @@ module AsciidoctorVaped
       end
 
       def table_row(row)
-        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top">#{inline cell}</td>) }
+        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top">#{render_inline cell}</td>) }
         "<tr>\n#{cells.join("\n")}\n</tr>"
       end
 
       def admonition(node)
         name = node.attributes.fetch(:name, "note").to_s
-        %(<div class="admonitionblock #{escape_attr name.downcase}">\n<table>\n<tr>\n<td class="icon"><div class="title">#{escape name.capitalize}</div></td>\n<td class="content">#{inline node}</td>\n</tr>\n</table>\n</div>)
+        %(<div class="admonitionblock #{escape_attr name.downcase}">\n<table>\n<tr>\n<td class="icon"><div class="title">#{escape name.capitalize}</div></td>\n<td class="content">#{render_body node}</td>\n</tr>\n</table>\n</div>)
       end
 
-      def block(class_name, node)
-        children = node_children(node)
-        body = children.empty? ? inline(node) : children.map { |child| convert_node(child) }.join("\n")
-        %(<div class="#{class_name}">\n#{title node}\n<div class="content">#{body}</div>\n</div>)
+      def example(node)
+        wrapped_block("exampleblock", node)
+      end
+
+      def quote(node)
+        wrapped_block("quoteblock", node)
+      end
+
+      def sidebar(node)
+        wrapped_block("sidebarblock", node)
+      end
+
+      def wrapped_block(class_name, node)
+        %(<div class="#{class_name}">\n#{title node}\n<div class="content">#{render_body node}</div>\n</div>)
+      end
+
+      def pass(node)
+        node.text.to_s
       end
 
       def open(node)
-        children = node_children(node)
-        return inline(node) if children.empty?
+        render_body(node)
+      end
 
-        children.map { |child| convert_node(child) }.join("\n")
+      def fallback(node)
+        render_inline(node.text.to_s)
       end
 
       def title(node)
         return "" unless node.attributes[:title]
 
-        %(<div class="title">#{inline node.attributes[:title]}</div>)
+        %(<div class="title">#{render_inline node.attributes[:title]}</div>)
       end
 
-      def inline(value)
-        nodes = value.respond_to?(:children) ? inline_nodes(value) : Parser::Inline.parse(value)
+      def render_inline(value)
+        nodes = value.respond_to?(:children) ? inline_children(value) : Parser::Inline.parse(value)
         return escape(value.text.to_s) if nodes.empty? && value.respond_to?(:text)
 
         nodes.map { |node| inline_node(node) }.join
@@ -93,24 +131,28 @@ module AsciidoctorVaped
       def inline_node(node)
         case node.context
         when :text then escape(node.text)
-        when :link then %(<a href="#{escape_attr node.attributes.fetch(:target)}">#{inline node}</a>)
-        when :strong then "<strong>#{inline node}</strong>"
-        when :emphasis then "<em>#{inline node}</em>"
+        when :link then %(<a href="#{escape_attr node.attributes.fetch(:target)}">#{render_inline node}</a>)
+        when :strong then "<strong>#{render_inline node}</strong>"
+        when :emphasis then "<em>#{render_inline node}</em>"
         when :monospace then "<code>#{escape node.text}</code>"
-        else inline(node.text.to_s)
+        else render_inline(node.text.to_s)
         end
       end
 
-      def node_children(node)
-        node.children.reject { |child| inline_context?(child.context) }
+      def block_children(node)
+        node.children.reject { |child| inline_context?(child) }
       end
 
-      def inline_nodes(node)
-        node.children.select { |child| inline_context?(child.context) }
+      def inline_children(node)
+        node.children.select { |child| inline_context?(child) }
       end
 
-      def inline_context?(context)
-        %i[text link strong emphasis monospace].include?(context)
+      def inline_context?(node)
+        INLINE_CONTEXTS.include?(node.context)
+      end
+
+      def list_tag(node)
+        node.context == :olist ? "ol" : "ul"
       end
 
       def doctype

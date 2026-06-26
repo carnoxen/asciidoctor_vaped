@@ -8,6 +8,10 @@ module AsciidoctorVaped
       class Sidebar < DelimitedNode
         def delimiter = "****"
         def default_context_name = :sidebar
+
+        private
+
+        def compound?(_context) = true
       end
     end
   end

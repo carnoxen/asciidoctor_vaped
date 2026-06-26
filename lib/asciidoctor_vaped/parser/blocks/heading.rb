@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "base_node"
+require_relative "common/base_node"
 
 module AsciidoctorVaped
   module Parser
     module Blocks
-      class Section < BaseNode
+      class Heading < BaseNode
         PATTERN = /\A(=+)\s+(.+)\z/
 
         def parse(context)
