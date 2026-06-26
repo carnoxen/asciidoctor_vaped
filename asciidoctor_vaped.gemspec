@@ -8,20 +8,20 @@ Gem::Specification.new do |spec|
   spec.authors = ["Kaben"]
   spec.email = ["carnoxen@gmail.com"]
 
-  spec.summary = "TODO: Write a short summary, because RubyGems requires one."
-  spec.description = "TODO: Write a longer description or delete this line."
-  spec.homepage = "TODO: Put your gem's website or public repo URL here."
+  spec.summary = "Reshaped Asciidoctor inspired by the original."
+  spec.description = "A reshaped version of Asciidoctor with a modern twist."
+  spec.homepage = "https://github.com/asciidoctor/asciidoctor_vaped"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
-  spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
+  spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
+  spec.metadata["source_code_uri"] = "https://github.com/asciidoctor/asciidoctor_vaped.git"
 
   # Uncomment the line below to require MFA for gem pushes.
   # This helps protect your gem from supply chain attacks by ensuring
   # no one can publish a new version without multi-factor authentication.
   # See: https://guides.rubygems.org/mfa-requirement-opt-in/
-  # spec.metadata["rubygems_mfa_required"] = "true"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(__dir__) do
     Dir["exe/*", "lib/**/*.rb", "sig/**/*.rbs", "LICENSE.txt", "README.md"]
