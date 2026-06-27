@@ -3,7 +3,7 @@
 module AsciidoctorVaped
   module AST
     class Node
-      TEXT_CONTEXTS = %i[text link strong emphasis monospace].freeze
+      TEXT_CONTEXTS = %i[link strong emphasis monospace].freeze
 
       attr_reader :children
       attr_accessor :parent
@@ -18,7 +18,7 @@ module AsciidoctorVaped
       end
 
       def append(node)
-        node.parent = self
+        node.parent = self unless node.is_a?(String)
         children << node
         node
       end
@@ -29,7 +29,13 @@ module AsciidoctorVaped
       end
 
       def text
-        children.select { |child| TEXT_CONTEXTS.include?(child.context) }.map(&:text).join
+        children.filter_map do |child|
+          if child.is_a?(String)
+            child
+          elsif TEXT_CONTEXTS.include?(child.context)
+            child.text
+          end
+        end.join
       end
 
       def parse_inline
@@ -37,7 +43,7 @@ module AsciidoctorVaped
       end
 
       def sections
-        children.select { |child| child.context == :section }
+        children.select { |child| child.respond_to?(:context) && child.context == :section }
       end
 
       def to_h
@@ -45,7 +51,7 @@ module AsciidoctorVaped
           context:,
           text:,
           **(respond_to?(:attributes) ? { attributes: } : {}),
-          children: children.map(&:to_h)
+          children: children.map { |child| child.respond_to?(:to_h) ? child.to_h : child }
         }
       end
     end

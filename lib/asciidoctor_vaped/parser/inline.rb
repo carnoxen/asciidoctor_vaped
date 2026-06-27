@@ -24,19 +24,15 @@ module AsciidoctorVaped
         parse_until_done(text.to_s)
       end
 
-      def text_node(text)
-        AST::Text.new(text)
-      end
-
       def parse_until_done(text)
         nodes = []
 
         until text.empty?
           token = next_token(text)
-          return nodes << text_node(text) unless token
+          return nodes << text unless token
 
           start, finish, pattern = token
-          nodes << text_node(text[0...start]) if start.positive?
+          nodes << text[0...start] if start.positive?
           nodes << pattern.node(text[start...finish])
           text = text[finish..] || ""
         end

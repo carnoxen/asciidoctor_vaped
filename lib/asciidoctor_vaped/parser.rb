@@ -3,7 +3,6 @@
 require_relative "ast/document"
 require_relative "ast/element"
 require_relative "ast/node"
-require_relative "ast/text"
 require_relative "parser/blocks"
 require_relative "parser/context"
 require_relative "parser/inline"

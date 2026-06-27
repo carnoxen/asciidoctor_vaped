@@ -16,16 +16,15 @@ module AsciidoctorVaped
         admonition: :admonition,
         example: :titled_block,
         quote: :titled_block,
-        sidebar: :titled_block,
+        sidebar: :sidebar,
         pass: :pass,
         open: :open,
-        text: :text,
         link: :link,
         strong: :inline,
         emphasis: :inline,
         monospace: :inline
       }.freeze
-      TEXT_NODE_CONTEXTS = %i[text link strong emphasis monospace].freeze
+      TEXT_NODE_CONTEXTS = %i[link strong emphasis monospace].freeze
 
       def initialize(options = {})
         @options = options
@@ -38,6 +37,8 @@ module AsciidoctorVaped
       private
 
       def convert_node(node)
+        return escape(node) if node.is_a?(String)
+
         send(NODE_RENDERERS.fetch(node.context, :fallback), node)
       end
 
@@ -57,8 +58,8 @@ module AsciidoctorVaped
         render_content(node)
       end
 
-      def text(node)
-        escape(node.text)
+      def sidebar(node)
+        titled_block(node)
       end
 
       def link(node)
@@ -132,7 +133,7 @@ module AsciidoctorVaped
       end
 
       def text_node?(node)
-        TEXT_NODE_CONTEXTS.include?(node.context)
+        node.is_a?(String) || TEXT_NODE_CONTEXTS.include?(node.context)
       end
     end
   end

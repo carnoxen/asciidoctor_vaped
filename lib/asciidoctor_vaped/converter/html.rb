@@ -65,10 +65,15 @@ module AsciidoctorVaped
         figure(node, render_content(node))
       end
 
+      def sidebar(node)
+        heading = node.attributes[:title] ? "<h2>#{render_text node.attributes[:title]}</h2>\n" : ""
+        %(<aside>\n#{heading}#{render_content node}\n</aside>)
+      end
+
       def list(node)
         tag_name = list_tag(node)
         items = node.children.map { |item| list_item(item) }.join("\n")
-        %(<div class="#{node.context}">\n<#{tag_name}>\n#{items}\n</#{tag_name}>\n</div>)
+        %(<#{tag_name}>\n#{items}\n</#{tag_name}>)
       end
 
       def list_item(node)
@@ -105,12 +110,12 @@ module AsciidoctorVaped
       end
 
       def article(node, class_name)
-        %(<article class="#{class_name}">\n#{title node}\n<div class="content">#{render_content node}</div>\n</article>)
+        %(<article class="#{class_name}">\n#{title node}\n#{render_content node}\n</article>)
       end
 
       def figure(node, content)
         class_name = DELIMITED_BLOCK_CLASSES.fetch(node.context)
-        %(<figure class="#{class_name}">\n#{figcaption node}\n<div class="content">#{content}</div>\n</figure>)
+        %(<figure class="#{class_name}">\n#{figcaption node}\n#{content}\n</figure>)
       end
 
       def figcaption(node)

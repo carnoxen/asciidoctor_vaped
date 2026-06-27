@@ -40,7 +40,7 @@ module AsciidoctorVaped
           text = lines.join("\n")
           return AST::Element.new(context_name(context), attributes: attributes(context), children: parse_children(context, lines)) if compound?(context)
 
-          AST::Element.new(context_name(context), attributes: attributes(context), children: [Inline.text_node(text)])
+          AST::Element.new(context_name(context), attributes: attributes(context), children: [text])
         end
 
         def parse_children(context, lines)
