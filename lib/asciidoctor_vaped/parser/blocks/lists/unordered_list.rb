@@ -6,10 +6,8 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class UnorderedList < ListBase
-        private
-
-        def list_context = :ulist
-        def pattern = /\A[*-]\s+/
+        CONTEXT = :ulist
+        PATTERN = /\A[*-]\s+/
       end
     end
   end

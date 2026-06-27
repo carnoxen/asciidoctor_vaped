@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "blocks/common/base_node"
-require_relative "blocks/common/blank_line"
-require_relative "blocks/common/comment"
+require_relative "common/base_node"
+require_relative "common/blank_line"
+require_relative "common/comment"
 require_relative "blocks/metadata/document_attribute"
 require_relative "blocks/metadata/caption"
 require_relative "blocks/metadata/element_attributes"

@@ -6,8 +6,9 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Passthrough < DelimitedNode
+        CONTEXT = :pass
+
         def delimiters = %w[+++ ++++]
-        def default_context_name = :pass
       end
     end
   end

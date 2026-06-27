@@ -44,7 +44,7 @@ module AsciidoctorVaped
         {
           context:,
           text:,
-          attributes:,
+          **(respond_to?(:attributes) ? { attributes: } : {}),
           children: children.map(&:to_h)
         }
       end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../common/base_node"
+require_relative "../../common/base_node"
 
 module AsciidoctorVaped
   module Parser

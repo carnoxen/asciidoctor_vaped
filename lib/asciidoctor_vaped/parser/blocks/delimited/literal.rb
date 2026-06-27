@@ -6,8 +6,8 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Literal < DelimitedNode
-        def delimiter = "...."
-        def default_context_name = :literal
+        DELIMITER = "...."
+        CONTEXT = :literal
       end
     end
   end

@@ -23,18 +23,6 @@ module AsciidoctorVaped
       def text=(value)
         self.value = value
       end
-
-      def children
-        []
-      end
-
-      def to_h
-        {
-          context:,
-          text:,
-          children: []
-        }
-      end
     end
   end
 end

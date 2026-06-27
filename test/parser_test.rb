@@ -119,8 +119,10 @@ class ParserTest < Minitest::Test
       ____
     ADOC
 
-    assert_includes html, '<div class="quoteblock">'
+    assert_includes html, '<figure class="quoteblock">'
+    assert_includes html, "<blockquote>"
     assert_includes html, "<p>Quote with <strong>strong</strong> text.</p>"
+    assert_includes html, "</blockquote>"
     assert_includes html, "<li>Nested item</li>"
   end
 
@@ -165,10 +167,11 @@ class ParserTest < Minitest::Test
     refute_includes html, "<li><p>Edgar Allan Poe</p></li>"
     assert_includes html, "<li>Protons</li>"
     refute_includes html, "<li><p>Protons</p></li>"
-    assert_includes html, '<pre class="highlight"><code class="language-ruby" data-lang="ruby">'
+    assert_includes html, '<pre class="highlight"><samp class="language-ruby" data-lang="ruby">'
     assert_includes html, '<table class="tableblock frame-all grid-all stretch">'
     assert_includes html, "<tr>\n<td class=\"tableblock halign-left valign-top\">Firefox</td>\n<td class=\"tableblock halign-left valign-top\">Browser</td>\n</tr>"
-    assert_includes html, '<td class="icon">'
+    assert_includes html, '<article class="admonitionblock note">'
+    refute_includes html, '<td class="icon">'
   end
 
   def test_parses_quick_reference_captions_and_delimited_nodes
@@ -231,17 +234,57 @@ class ParserTest < Minitest::Test
 
   def test_converts_passthrough_and_open_blocks
     html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
+      .Passthrough
       +++
       <strong>raw</strong>
       +++
 
+      .Open
       --
       open block
       --
     ADOC
 
+    assert_includes html, '<figure class="passblock">'
+    assert_includes html, '<figcaption class="title">Passthrough</figcaption>'
     assert_includes html, "<strong>raw</strong>"
+    assert_includes html, '<figure class="openblock">'
+    assert_includes html, '<figcaption class="title">Open</figcaption>'
     assert_includes html, "open block"
+  end
+
+  def test_converts_delimited_nodes_to_figures_with_figcaptions
+    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
+      .Listing
+      ----
+      listing
+      ----
+
+      .Literal
+      ....
+      literal
+      ....
+
+      .Example
+      ====
+      example
+      ====
+
+      .Quote
+      ____
+      quote
+      ____
+
+      .Sidebar
+      ****
+      sidebar
+      ****
+    ADOC
+
+    %w[listing literal example quote sidebar].each do |name|
+      assert_includes html, %(<figure class="#{name}block">)
+      assert_includes html, %(<figcaption class="title">#{name.capitalize}</figcaption>)
+    end
   end
 
   def test_parses_quick_reference_document_title_and_attributes

@@ -3,7 +3,25 @@
 module AsciidoctorVaped
   module Converter
     class HTML < BaseConverter
-      include Converter::Node
+      ELEMENT_NAMES = {
+        section: "section",
+        paragraph: "p",
+        literal: "pre",
+        title: "div",
+        link: "a",
+        strong: "strong",
+        emphasis: "em",
+        monospace: "code"
+      }.freeze
+      DELIMITED_BLOCK_CLASSES = {
+        listing: "listingblock",
+        literal: "literalblock",
+        example: "exampleblock",
+        quote: "quoteblock",
+        sidebar: "sidebarblock",
+        open: "openblock",
+        pass: "passblock"
+      }.freeze
 
       def convert(document)
         title = document.doctitle || "Untitled"
@@ -22,24 +40,29 @@ module AsciidoctorVaped
 </html>)
       end
 
-      def paragraph_tag
-        "p"
-      end
-
       def section(node)
         level = node.attributes.fetch(:level, 1)
         heading = "h#{[level + 1, 6].min}"
-        %(<div class="sect#{level}">\n<#{heading}>#{render_text node}</#{heading}>\n#{render_nodes node}\n</div>)
+        tag_name = element_name(:section)
+        %(<#{tag_name}>\n<#{heading}>#{render_text node}</#{heading}>\n#{render_nodes node}\n</#{tag_name}>)
       end
 
       def listing(node)
         language = node.attributes[:language]
-        code_attrs = language ? %( class="language-#{escape_attr language}" data-lang="#{escape_attr language}") : ""
-        %(<div class="listingblock">\n#{title node}\n<div class="content">\n<pre class="highlight"><code#{code_attrs}>#{escape node.text}</code></pre>\n</div>\n</div>)
+        samp_attrs = language ? %( class="language-#{escape_attr language}" data-lang="#{escape_attr language}") : ""
+        figure(node, %(<pre class="highlight"><samp#{samp_attrs}>#{escape node.text}</samp></pre>))
       end
 
-      def literal_tag
-        "pre"
+      def literal(node)
+        figure(node, tag(element_name(:literal), escape(node.text)))
+      end
+
+      def pass(node)
+        figure(node, node.text.to_s)
+      end
+
+      def open(node)
+        figure(node, render_content(node))
       end
 
       def list(node)
@@ -63,52 +86,37 @@ module AsciidoctorVaped
       end
 
       def admonition(node)
-        name = node.attributes.fetch(:name, "note").to_s
-        %(<div class="admonitionblock #{escape_attr name.downcase}">\n<table>\n<tr>\n<td class="icon"><div class="title">#{escape name.capitalize}</div></td>\n<td class="content">#{render_content node}</td>\n</tr>\n</table>\n</div>)
+        name = node.attributes.fetch(:name, "note").to_s.downcase
+        article(node, "admonitionblock #{escape_attr name}")
       end
 
-      def example(node)
-        wrapped_node("exampleblock", node)
+      def titled_block(node)
+        content = render_content(node)
+        content = tag("blockquote", content) if node.context == :quote
+        figure(node, content)
       end
 
-      def quote(node)
-        wrapped_node("quoteblock", node)
-      end
-
-      def sidebar(node)
-        wrapped_node("sidebarblock", node)
-      end
-
-      def title_tag
-        "div"
-      end
-
-      def title_attrs
-        { class: "title" }
-      end
-
-      def link_tag
-        "a"
+      def element_attrs(context)
+        context == :title ? { class: "title" } : super
       end
 
       def link_attrs(node)
         { href: node.attributes.fetch(:target) }
       end
 
-      def strong_tag
-        "strong"
+      def article(node, class_name)
+        %(<article class="#{class_name}">\n#{title node}\n<div class="content">#{render_content node}</div>\n</article>)
       end
 
-      def emphasis_tag
-        "em"
+      def figure(node, content)
+        class_name = DELIMITED_BLOCK_CLASSES.fetch(node.context)
+        %(<figure class="#{class_name}">\n#{figcaption node}\n<div class="content">#{content}</div>\n</figure>)
       end
 
-      def monospace_tag
-        "code"
-      end
+      def figcaption(node)
+        return "" unless node.attributes[:title]
 
-      def wrapped_node(class_name, node)
-        %(<div class="#{class_name}">\n#{title node}\n<div class="content">#{render_content node}</div>\n</div>)
+        tag("figcaption", render_text(node.attributes[:title]), class: "title")
       end
 
       def list_tag(node)

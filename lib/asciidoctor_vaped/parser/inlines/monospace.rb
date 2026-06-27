@@ -3,16 +3,9 @@
 module AsciidoctorVaped
   module Parser
     module Inlines
-      class Monospace
+      class Monospace < QuotedNode
         PATTERN = /`[^`]+`/.freeze
-
-        def self.match(text)
-          PATTERN.match(text)
-        end
-
-        def self.node(token)
-          Inline.container(:monospace, token[1...-1])
-        end
+        CONTEXT = :monospace
       end
     end
   end

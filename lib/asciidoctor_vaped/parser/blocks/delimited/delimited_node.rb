@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../common/base_node"
+require_relative "../../common/base_node"
 
 module AsciidoctorVaped
   module Parser
@@ -18,6 +18,10 @@ module AsciidoctorVaped
 
         def delimiters
           [delimiter]
+        end
+
+        def delimiter
+          self.class::DELIMITER
         end
 
         def attributes(context)
@@ -54,8 +58,14 @@ module AsciidoctorVaped
         end
 
         def default_context_name
-          raise NotImplementedError, "#{self.class} must implement #default_context_name"
+          self.class::CONTEXT
         end
+      end
+
+      class CompoundDelimitedNode < DelimitedNode
+        private
+
+        def compound?(_context) = true
       end
     end
   end

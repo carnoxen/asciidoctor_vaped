@@ -6,8 +6,8 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Listing < DelimitedNode
-        def delimiter = "----"
-        def default_context_name = :listing
+        DELIMITER = "----"
+        CONTEXT = :listing
       end
     end
   end

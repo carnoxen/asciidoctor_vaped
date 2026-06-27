@@ -3,16 +3,9 @@
 module AsciidoctorVaped
   module Parser
     module Inlines
-      class Strong
+      class Strong < QuotedNode
         PATTERN = /\*[^*]+\*/.freeze
-
-        def self.match(text)
-          PATTERN.match(text)
-        end
-
-        def self.node(token)
-          Inline.container(:strong, token[1...-1])
-        end
+        CONTEXT = :strong
       end
     end
   end

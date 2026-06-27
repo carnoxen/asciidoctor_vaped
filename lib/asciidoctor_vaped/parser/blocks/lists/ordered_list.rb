@@ -6,10 +6,8 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class OrderedList < ListBase
-        private
-
-        def list_context = :olist
-        def pattern = /\A\.\s+/
+        CONTEXT = :olist
+        PATTERN = /\A\.\s+/
       end
     end
   end

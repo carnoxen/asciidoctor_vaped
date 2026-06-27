@@ -7,11 +7,11 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Table < DelimitedNode
-        def delimiter = "|==="
+        DELIMITER = "|==="
 
         def parse(context)
           table = AST::Element.new(:table)
-          rows(context.reader.read_delimited(delimiter)).each { |cells| table << TableRow.build(cells) }
+          rows(context.reader.read_delimited(DELIMITER)).each { |cells| table << TableRow.build(cells) }
           context.append(table)
         end
 

@@ -3,7 +3,20 @@
 module AsciidoctorVaped
   module Converter
     class DocBook < BaseConverter
-      include Converter::Node
+      ELEMENT_NAMES = {
+        paragraph: "para",
+        literal: "literallayout",
+        title: "title",
+        link: "link",
+        strong: "emphasis",
+        emphasis: "emphasis",
+        monospace: "literal"
+      }.freeze
+      TITLED_BLOCK_NAMES = {
+        example: "example",
+        quote: "blockquote",
+        sidebar: "sidebar"
+      }.freeze
 
       def convert(document)
         title = document.doctitle || "Untitled"
@@ -12,10 +25,6 @@ module AsciidoctorVaped
       end
 
       private
-
-      def paragraph_tag
-        "para"
-      end
 
       def section(node)
         body = render_nodes(node)
@@ -26,14 +35,6 @@ module AsciidoctorVaped
         language = node.attributes[:language]
         attrs = language ? %( language="#{escape_attr language}") : ""
         "<programlisting#{attrs}>#{escape node.text}</programlisting>"
-      end
-
-      def literal_tag
-        "literallayout"
-      end
-
-      def open(node)
-        render_content(node)
       end
 
       def list(node)
@@ -55,19 +56,8 @@ module AsciidoctorVaped
         "<#{name}>#{paragraph_content node}</#{name}>"
       end
 
-      def example(node)
-        titled_node("example", node)
-      end
-
-      def quote(node)
-        titled_node("blockquote", node)
-      end
-
-      def sidebar(node)
-        titled_node("sidebar", node)
-      end
-
-      def titled_node(tag_name, node)
+      def titled_block(node)
+        tag_name = TITLED_BLOCK_NAMES.fetch(node.context)
         title = node.attributes[:title] ? "<title>#{render_text node.attributes[:title]}</title>\n" : ""
         "<#{tag_name}>\n#{title}#{paragraph_content node}\n</#{tag_name}>"
       end
@@ -80,36 +70,12 @@ module AsciidoctorVaped
         node.children.map { |row| row.children.length }.max || 1
       end
 
-      def title_tag
-        "title"
-      end
-
-      def title_attrs
-        {}
-      end
-
-      def link_tag
-        "link"
-      end
-
       def link_attrs(node)
         { "xlink:href": node.attributes.fetch(:target) }
       end
 
-      def strong_tag
-        "emphasis"
-      end
-
-      def strong_attrs
-        { role: "strong" }
-      end
-
-      def emphasis_tag
-        "emphasis"
-      end
-
-      def monospace_tag
-        "literal"
+      def element_attrs(context)
+        context == :strong ? { role: "strong" } : super
       end
     end
   end

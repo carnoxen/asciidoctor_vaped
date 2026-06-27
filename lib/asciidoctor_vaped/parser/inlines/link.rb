@@ -3,12 +3,8 @@
 module AsciidoctorVaped
   module Parser
     module Inlines
-      class Link
+      class Link < BaseNode
         PATTERN = %r{https?://[^\s\[]+\[[^\]]+\]}.freeze
-
-        def self.match(text)
-          PATTERN.match(text)
-        end
 
         def self.node(token)
           target, text = token.match(/\A(.+)\[([^\]]+)\]\z/).captures

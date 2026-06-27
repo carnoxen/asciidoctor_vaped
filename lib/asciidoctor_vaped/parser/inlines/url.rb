@@ -3,12 +3,8 @@
 module AsciidoctorVaped
   module Parser
     module Inlines
-      class Url
+      class Url < BaseNode
         PATTERN = %r{https?://[^\s<]+}.freeze
-
-        def self.match(text)
-          PATTERN.match(text)
-        end
 
         def self.node(token)
           Inline.container(:link, token, target: token)

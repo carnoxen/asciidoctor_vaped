@@ -5,13 +5,9 @@ require_relative "delimited_node"
 module AsciidoctorVaped
   module Parser
     module Blocks
-      class Open < DelimitedNode
-        def delimiter = "--"
-        def default_context_name = :open
-
-        private
-
-        def compound?(_context) = true
+      class Open < CompoundDelimitedNode
+        DELIMITER = "--"
+        CONTEXT = :open
       end
     end
   end
