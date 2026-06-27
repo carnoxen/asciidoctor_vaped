@@ -10,9 +10,12 @@ module AsciidoctorVaped
         DELIMITER = "|==="
 
         def parse(context)
+          lines = context.reader.read_delimited(DELIMITER)
+          has_header = header?(context, lines)
           table = AST::Element.new(:table)
-          rows(context.reader.read_delimited(DELIMITER)).each { |cells| table << TableRow.build(cells) }
+          rows(lines).each { |cells| table << TableRow.build(cells) }
           context.append(table)
+          table.attributes[:header] = true if has_header
         end
 
         private
@@ -50,6 +53,15 @@ module AsciidoctorVaped
           return [] if line.strip == ""
 
           line.sub(/\A\|/, "").split(/\s+\|/).map(&:strip)
+        end
+
+        def header?(context, lines)
+          attributes = context.pending_attributes
+          !attributes[:noheader] && (attributes[:header] || implicit_header?(lines))
+        end
+
+        def implicit_header?(lines)
+          lines[0]&.strip != "" && lines[1]&.strip == ""
         end
 
       end

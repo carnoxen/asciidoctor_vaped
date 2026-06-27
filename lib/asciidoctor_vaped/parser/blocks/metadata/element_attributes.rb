@@ -34,7 +34,7 @@ module AsciidoctorVaped
 
         def assign_named_attribute(attributes, name, value)
           key = normalize_name(name)
-          return parse_options(value, attributes) if key == :opts
+          return parse_options(value, attributes) if %i[opts options].include?(key)
 
           attributes[key] = value
         end

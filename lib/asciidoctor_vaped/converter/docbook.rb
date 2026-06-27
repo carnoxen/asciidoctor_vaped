@@ -44,11 +44,10 @@ module AsciidoctorVaped
       end
 
       def table(node)
-        rows = node.children.map do |row|
-          cells = row.children.map { |cell| "<entry>#{render_text cell}</entry>" }.join
-          "<row>#{cells}</row>"
-        end.join("\n")
-        "<informaltable>\n<tgroup cols=\"#{column_count node}\">\n<tbody>\n#{rows}\n</tbody>\n</tgroup>\n</informaltable>"
+        rows = node.children.dup
+        head = "<thead>\n#{table_row rows.shift}\n</thead>\n" if node.attributes[:header] && rows.any?
+        body = rows.map { |row| table_row(row) }.join("\n")
+        "<informaltable>\n<tgroup cols=\"#{column_count node}\">\n#{head}<tbody>\n#{body}\n</tbody>\n</tgroup>\n</informaltable>"
       end
 
       def admonition(node)
@@ -68,6 +67,11 @@ module AsciidoctorVaped
 
       def column_count(node)
         node.children.map { |row| row.children.length }.max || 1
+      end
+
+      def table_row(row)
+        cells = row.children.map { |cell| "<entry>#{render_text cell}</entry>" }.join
+        "<row>#{cells}</row>"
       end
 
       def link_attrs(node)

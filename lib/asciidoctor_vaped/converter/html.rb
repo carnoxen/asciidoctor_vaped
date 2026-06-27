@@ -81,12 +81,16 @@ module AsciidoctorVaped
       end
 
       def table(node)
-        rows = node.children.map { |row| table_row(row) }.join("\n")
-        %(<table class="tableblock frame-all grid-all stretch">\n<tbody>\n#{rows}\n</tbody>\n</table>)
+        rows = node.children.dup
+        head = "<thead>\n#{table_row rows.shift, "th"}\n</thead>\n" if node.attributes[:header] && rows.any?
+        body = rows.map { |row| table_row(row, "td") }.join("\n")
+        %(<table class="tableblock frame-all grid-all stretch">\n#{head}<tbody>\n#{body}\n</tbody>\n</table>)
       end
 
-      def table_row(row)
-        cells = row.children.map { |cell| %(<td class="tableblock halign-left valign-top">#{render_text cell}</td>) }
+      def table_row(row, tag_name = "td")
+        cells = row.children.map do |cell|
+          %(<#{tag_name} class="tableblock halign-left valign-top">#{render_text cell}</#{tag_name}>)
+        end
         "<tr>\n#{cells.join("\n")}\n</tr>"
       end
 
