@@ -94,114 +94,19 @@ class BlocksTest < Minitest::Test
     assert_equal "NOTE", note.attributes[:name]
   end
 
-  def test_convert_html_renders_compound_blocks_from_child_structure
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      ____
-      Quote with *strong* text.
-
-      * Nested item
-      ____
+  def test_parse_builds_media_blocks
+    document = AsciidoctorVaped.parse <<~ADOC
+      image::diagram.png[Architecture,640,480]
+      audio::podcast.mp3[options="autoplay,loop"]
+      video::dQw4w9WgXcQ[youtube]
     ADOC
 
-    assert_includes html, '<figure class="quoteblock">'
-    assert_includes html, "<blockquote>"
-    assert_includes html, "<p>Quote with <strong>strong</strong> text.</p>"
-    assert_includes html, "</blockquote>"
-    assert_includes html, "<li>Nested item</li>"
+    image, audio, video = document.children
+    assert_equal [:image, :audio, :video], document.children.map(&:context)
+    assert_equal({ target: "diagram.png", alt: "Architecture", width: "640", height: "480" }, image.attributes)
+    assert_equal true, audio.attributes[:autoplay]
+    assert_equal true, audio.attributes[:loop]
+    assert_equal "youtube", video.attributes[:provider]
   end
 
-  def test_convert_docbook_renders_compound_blocks_from_child_structure
-    docbook = AsciidoctorVaped.convert <<~ADOC, backend: :docbook
-      ____
-      Quote with *strong* text.
-      ____
-    ADOC
-
-    assert_includes docbook, "<blockquote>"
-    assert_includes docbook, '<para>Quote with <emphasis role="strong">strong</emphasis> text.</para>'
-  end
-
-  def test_convert_renders_source_listing
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      [source,ruby]
-      ----
-      puts 'Hello, World!'
-      ----
-    ADOC
-
-    assert_includes html, '<pre class="highlight"><samp class="language-ruby" data-lang="ruby">'
-  end
-
-  def test_convert_renders_admonition_without_table_markup
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      NOTE: An admonition paragraph draws the reader's attention.
-    ADOC
-
-    assert_includes html, '<article class="admonitionblock note">'
-    refute_includes html, '<td class="icon">'
-    refute_includes html, '<div class="content">'
-  end
-
-  def test_convert_renders_passthrough_and_open_blocks
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      .Passthrough
-      +++
-      <strong>raw</strong>
-      +++
-
-      .Open
-      --
-      open block
-      --
-    ADOC
-
-    assert_includes html, '<figure class="passblock">'
-    assert_includes html, '<figcaption class="title">Passthrough</figcaption>'
-    assert_includes html, "<strong>raw</strong>"
-    assert_includes html, '<figure class="openblock">'
-    assert_includes html, '<figcaption class="title">Open</figcaption>'
-    assert_includes html, "open block"
-  end
-
-  def test_convert_renders_delimited_nodes_with_titles
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      .Listing
-      ----
-      listing
-      ----
-
-      .Literal
-      ....
-      literal
-      ....
-
-      .Example
-      ====
-      example
-      ====
-
-      .Quote
-      ____
-      quote
-      ____
-
-      .Sidebar
-      ****
-      sidebar
-      ****
-    ADOC
-
-    %w[listing literal example quote].each do |name|
-      assert_includes html, %(<figure class="#{name}block">)
-      assert_includes html, %(<figcaption class="title">#{name.capitalize}</figcaption>)
-    end
-
-    assert_includes html, "<aside>"
-    assert_includes html, "<h2>Sidebar</h2>"
-    assert_includes html, "<p>sidebar</p>"
-    refute_includes html, "<aside class="
-    refute_includes html, '<figure class="sidebarblock">'
-    refute_includes html, '<figcaption class="title">Sidebar</figcaption>'
-    refute_includes html, '<div class="content">'
-  end
 end

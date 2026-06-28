@@ -3,7 +3,7 @@
 module AsciidoctorVaped
   module AST
     class Node
-      TEXT_CONTEXTS = %i[link strong emphasis monospace].freeze
+      TEXT_CONTEXTS = %i[link strong emphasis monospace term description].freeze
 
       attr_reader :children
       attr_accessor :parent

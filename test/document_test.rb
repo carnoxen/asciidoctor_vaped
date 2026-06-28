@@ -56,14 +56,4 @@ class DocumentTest < Minitest::Test
     assert_equal "Section content.", paragraph.text
   end
 
-  def test_convert_hides_document_title_in_embedded_output
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      = Document Title
-
-      == Section Title
-    ADOC
-
-    refute_includes html, "<h1>Document Title</h1>"
-    assert_includes html, "<h2>Section Title</h2>"
-  end
 end

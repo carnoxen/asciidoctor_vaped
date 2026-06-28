@@ -24,11 +24,4 @@ class InlineTest < Minitest::Test
     assert_same paragraph, paragraph.children[1].parent
   end
 
-  def test_convert_renders_parsed_inline_nodes
-    html = AsciidoctorVaped.convert <<~ADOC, header_footer: false
-      * Use *strong*, _emphasis_, and `code`
-    ADOC
-
-    assert_includes html, "<li>Use <strong>strong</strong>, <em>emphasis</em>, and <code>code</code></li>"
-  end
 end

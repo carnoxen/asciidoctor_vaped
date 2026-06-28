@@ -7,7 +7,7 @@ module AsciidoctorVaped
     module Blocks
       class OrderedList < ListBase
         CONTEXT = :olist
-        PATTERN = /\A\.\s+/
+        PATTERN = /\A(?<marker>\.+)\s+/
       end
     end
   end

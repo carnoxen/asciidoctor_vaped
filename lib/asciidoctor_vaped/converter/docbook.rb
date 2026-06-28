@@ -19,50 +19,88 @@ module AsciidoctorVaped
       }.freeze
 
       def convert(document)
+        @document = document
         title = document.doctitle || "Untitled"
         body = render_nodes(document)
-        %(<article>\n<title>#{escape title}</title>\n#{body}\n</article>)
+        tag("article", "\n#{tag "title", escape(title)}\n#{body}\n")
       end
 
       private
 
       def section(node)
         body = render_nodes(node)
-        %(<section>\n<title>#{render_text node}</title>\n#{body}\n</section>)
+        tag("section", "\n#{tag "title", render_text(node)}\n#{body}\n")
       end
 
       def listing(node)
         language = node.attributes[:language]
-        attrs = language ? %( language="#{escape_attr language}") : ""
-        "<programlisting#{attrs}>#{escape node.text}</programlisting>"
+        attrs = language ? { language: } : {}
+        tag("programlisting", escape(node.text), attrs)
+      end
+
+      def media(node)
+        object = "#{node.context}object"
+        data = "#{node.context}data"
+        attrs = { fileref: media_target(node), width: node.attributes[:width] }
+        attrs[:depth] = node.attributes[:height]
+        content = tag(object, tag(data, "", attrs))
+        if node.context == :image && node.attributes[:alt]
+          content += tag("textobject", tag("phrase", escape(node.attributes[:alt])))
+        end
+        content += tag("caption", tag("para", render_text(node.attributes[:title]))) if node.attributes[:title]
+        tag("mediaobject", content)
       end
 
       def list(node)
+        return description_list(node) if node.context == :dlist
+
         tag_name = node.context == :olist ? "orderedlist" : "itemizedlist"
-        items = node.children.map { |item| "<listitem><para>#{render_text item}</para></listitem>" }.join("\n")
-        "<#{tag_name}>\n#{items}\n</#{tag_name}>"
+        items = node.children.map { |item| list_item(item) }.join("\n")
+        tag(tag_name, "\n#{items}\n")
+      end
+
+      def list_item(node)
+        nested = render_nodes(node)
+        nested = "\n#{nested}" unless nested.empty?
+        tag("listitem", "#{tag "para", render_text(node)}#{nested}")
+      end
+
+      def description_list(node)
+        items = node.children.map { |item| description_item(item) }.join("\n")
+        tag("variablelist", "\n#{items}\n")
+      end
+
+      def description_item(node)
+        term = node.children.find { |child| child.context == :term }
+        description = node.children.find { |child| child.context == :description }
+        nested = node.children.reject { |child| child.equal?(term) || child.equal?(description) }
+          .map { |child| convert_node(child) }.join("\n")
+        nested = "\n#{nested}" unless nested.empty?
+        item = tag("listitem", "#{tag "para", render_text(description)}#{nested}")
+        tag("varlistentry", "#{tag "term", render_text(term)}#{item}")
       end
 
       def table(node)
         rows = node.children.dup
-        head = "<thead>\n#{table_row rows.shift}\n</thead>\n" if node.attributes[:header] && rows.any?
+        head = "#{tag "thead", "\n#{table_row rows.shift}\n"}\n" if node.attributes[:header] && rows.any?
         body = rows.map { |row| table_row(row) }.join("\n")
-        "<informaltable>\n<tgroup cols=\"#{column_count node}\">\n#{head}<tbody>\n#{body}\n</tbody>\n</tgroup>\n</informaltable>"
+        group = tag("tgroup", "\n#{head}#{tag "tbody", "\n#{body}\n"}\n", cols: column_count(node))
+        tag("informaltable", "\n#{group}\n")
       end
 
       def admonition(node)
         name = node.attributes.fetch(:name, "note").to_s.downcase
-        "<#{name}>#{paragraph_content node}</#{name}>"
+        tag(name, paragraph_content(node))
       end
 
       def titled_block(node)
         tag_name = TITLED_BLOCK_NAMES.fetch(node.context)
-        title = node.attributes[:title] ? "<title>#{render_text node.attributes[:title]}</title>\n" : ""
-        "<#{tag_name}>\n#{title}#{paragraph_content node}\n</#{tag_name}>"
+        title = node.attributes[:title] ? "#{tag "title", render_text(node.attributes[:title])}\n" : ""
+        tag(tag_name, "\n#{title}#{paragraph_content node}\n")
       end
 
       def paragraph_content(node)
-        child_nodes(node).empty? ? "<para>#{render_text node}</para>" : render_nodes(node)
+        child_nodes(node).empty? ? tag("para", render_text(node)) : render_nodes(node)
       end
 
       def column_count(node)
@@ -70,8 +108,8 @@ module AsciidoctorVaped
       end
 
       def table_row(row)
-        cells = row.children.map { |cell| "<entry>#{render_text cell}</entry>" }.join
-        "<row>#{cells}</row>"
+        cells = row.children.map { |cell| tag("entry", render_text(cell)) }.join
+        tag("row", cells)
       end
 
       def link_attrs(node)
@@ -81,6 +119,7 @@ module AsciidoctorVaped
       def element_attrs(context)
         context == :strong ? { role: "strong" } : super
       end
+
     end
   end
 end

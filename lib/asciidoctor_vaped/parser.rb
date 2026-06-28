@@ -26,8 +26,10 @@ module AsciidoctorVaped
       Blocks::Passthrough,
       Blocks::Table,
       Blocks::Admonition,
+      Blocks::Media,
       Blocks::UnorderedList,
       Blocks::OrderedList,
+      Blocks::DescriptionList,
       Blocks::Paragraph
     ].freeze
     NODE_CHAIN = Blocks.chain(NODE_HANDLERS)

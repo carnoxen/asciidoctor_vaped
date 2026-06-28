@@ -19,10 +19,12 @@ require_relative "blocks/tables/table_cell"
 require_relative "blocks/tables/table_row"
 require_relative "blocks/tables/table"
 require_relative "blocks/admonition"
+require_relative "blocks/media"
 require_relative "blocks/lists/list_item"
 require_relative "blocks/lists/list_base"
 require_relative "blocks/lists/unordered_list"
 require_relative "blocks/lists/ordered_list"
+require_relative "blocks/lists/description_list"
 require_relative "blocks/paragraph"
 
 module AsciidoctorVaped

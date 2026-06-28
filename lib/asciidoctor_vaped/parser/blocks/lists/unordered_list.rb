@@ -7,7 +7,7 @@ module AsciidoctorVaped
     module Blocks
       class UnorderedList < ListBase
         CONTEXT = :ulist
-        PATTERN = /\A[*-]\s+/
+        PATTERN = /\A(?<marker>\*+|-)\s+/
       end
     end
   end

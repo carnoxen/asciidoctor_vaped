@@ -12,6 +12,7 @@ module AsciidoctorVaped
         literal: :literal,
         ulist: :list,
         olist: :list,
+        dlist: :list,
         table: :table,
         admonition: :admonition,
         example: :titled_block,
@@ -19,6 +20,9 @@ module AsciidoctorVaped
         sidebar: :sidebar,
         pass: :pass,
         open: :open,
+        image: :media,
+        audio: :media,
+        video: :media,
         link: :link,
         strong: :inline,
         emphasis: :inline,
@@ -66,6 +70,25 @@ module AsciidoctorVaped
         tag(element_name(:link), render_text(node), link_attrs(node))
       end
 
+      def media_target(node)
+        target = node.attributes.fetch(:target)
+        provider = node.attributes[:provider]
+        return "#{video_provider_url provider}#{target}" if provider
+        return target unless node.context == :image
+
+        imagesdir = @document.attributes["imagesdir"] || @document.attributes[:imagesdir]
+        return target if !imagesdir || imagesdir.empty? || target.match?(/\A(?:[a-z][a-z0-9+.-]*:|\/)/i)
+
+        "#{imagesdir.sub(%r{/\z}, "")}/#{target}"
+      end
+
+      def video_provider_url(provider, embed: false)
+        case provider
+        when "youtube" then embed ? "https://www.youtube.com/embed/" : "https://www.youtube.com/watch?v="
+        when "vimeo" then embed ? "https://player.vimeo.com/video/" : "https://vimeo.com/"
+        end
+      end
+
       def inline(node)
         content = node.context == :monospace ? escape(node.text) : render_text(node)
         tag(element_name(node.context), content, element_attrs(node.context))
@@ -101,8 +124,9 @@ module AsciidoctorVaped
         escape(value)
       end
 
-      def tag(name, content, attrs = {})
-        "<#{name}#{html_attrs attrs}>#{content}</#{name}>"
+      def tag(name, content = nil, attrs = {})
+        opening = "<#{name}#{html_attrs attrs}>"
+        content.nil? ? opening : "#{opening}#{content}</#{name}>"
       end
 
       def html_attrs(attrs)

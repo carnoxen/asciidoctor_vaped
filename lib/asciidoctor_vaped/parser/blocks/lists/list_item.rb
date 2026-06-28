@@ -6,13 +6,17 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class ListItem < BaseNode
+        def self.build(text)
+          AST::Element.new(:list_item, children: Inline.parse(text))
+        end
+
         def initialize(successor = nil, pattern:)
           super(successor)
           @pattern = pattern
         end
 
         def parse(context)
-          context.append AST::Element.new(:list_item, children: Inline.parse(context.reader.read.sub(@pattern, "")))
+          context.append self.class.build(context.reader.read.sub(@pattern, ""))
         end
 
         private
