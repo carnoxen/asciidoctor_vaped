@@ -6,7 +6,7 @@ module AsciidoctorVaped
       ELEMENT_NAMES = {
         paragraph: "para",
         literal: "literallayout",
-        title: "title",
+        block_title: "title",
         link: "link",
         strong: "emphasis",
         emphasis: "emphasis",

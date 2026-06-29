@@ -98,10 +98,10 @@ module AsciidoctorVaped
         render_text(node.text.to_s)
       end
 
-      def title(node)
+      def block_title(node)
         return "" unless node.attributes[:title]
 
-        tag(element_name(:title), render_text(node.attributes[:title]), element_attrs(:title))
+        tag(element_name(:block_title), render_text(node.attributes[:title]), element_attrs(:block_title))
       end
 
       def element_name(name)

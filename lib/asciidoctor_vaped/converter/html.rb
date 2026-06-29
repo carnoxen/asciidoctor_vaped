@@ -7,7 +7,7 @@ module AsciidoctorVaped
         section: "section",
         paragraph: "p",
         literal: "pre",
-        title: "div",
+        block_title: "h2",
         link: "a",
         strong: "strong",
         emphasis: "em",
@@ -28,12 +28,11 @@ module AsciidoctorVaped
 
       def convert(document)
         @document = document
-        title = document.doctitle || "Untitled"
         body = render_nodes(document)
         return body if @options[:header_footer] == false
 
         body = [document_title(document), body].reject(&:empty?).join("\n")
-        head = tag("head", "\n    #{tag "meta", nil, charset: "utf-8"}\n    #{tag "title", escape(title)}\n  ")
+        head = tag("head", "\n    #{tag "meta", nil, charset: "utf-8"}\n  ")
         body = tag("body", "\n    #{body}\n  ")
         "#{tag "!DOCTYPE html"}\n#{tag "html", "\n  #{head}\n  #{body}\n"}"
       end
@@ -152,7 +151,7 @@ module AsciidoctorVaped
       end
 
       def element_attrs(context)
-        context == :title ? { class: "title" } : super
+        context == :block_title ? { class: "title" } : super
       end
 
       def link_attrs(node)
@@ -160,7 +159,7 @@ module AsciidoctorVaped
       end
 
       def article(node, class_name)
-        tag("article", "\n#{title node}\n#{render_content node}\n", class: class_name)
+        tag("article", "\n#{block_title node}\n#{render_content node}\n", class: class_name)
       end
 
       def figure(node, content)

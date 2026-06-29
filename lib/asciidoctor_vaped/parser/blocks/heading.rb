@@ -6,11 +6,11 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Heading < BaseNode
-        PATTERN = /\A(=+)\s+(.+)\z/
+        PATTERN = /\A(={2,6})\s+(.+)\z/
 
         def parse(context)
           markers, title = context.reader.read.match(PATTERN).captures
-          level = [markers.length - 1, 1].max
+          level = markers.length - 1
           context.open_section AST::Element.new(:section, attributes: { level: }, children: Inline.parse(title))
         end
       end

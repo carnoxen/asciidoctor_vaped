@@ -14,7 +14,7 @@ class HTMLConverterTest < Minitest::Test
     assert_includes html, "<h2>Section Title</h2>"
   end
 
-  def test_renders_document_title_group_in_standalone_output
+  def test_renders_only_document_title_group_in_standalone_output
     html = AsciidoctorVaped.convert <<~ADOC
       = Document Title
 
@@ -22,6 +22,19 @@ class HTMLConverterTest < Minitest::Test
     ADOC
 
     assert_includes html, "<hgroup>\n<h1>Document Title</h1>\n</hgroup>"
+    refute_includes html, "<title>"
+  end
+
+  def test_renders_section_levels_as_h2_through_h6
+    html = convert <<~ADOC
+      == Level 1
+      === Level 2
+      ==== Level 3
+      ===== Level 4
+      ====== Level 5
+    ADOC
+
+    (1..5).each { |level| assert_includes html, "<h#{level + 1}>Level #{level}</h#{level + 1}>" }
   end
 
   def test_renders_document_subtitle_in_title_group
@@ -109,6 +122,16 @@ class HTMLConverterTest < Minitest::Test
     assert_includes html, '<article class="admonitionblock note">'
     refute_includes html, '<td class="icon">'
     refute_includes html, '<div class="content">'
+  end
+
+  def test_renders_admonition_title_as_h2
+    html = convert <<~ADOC
+      .Important note
+      NOTE: Read this.
+    ADOC
+
+    assert_includes html, '<h2 class="title">Important note</h2>'
+    refute_includes html, '<div class="title">'
   end
 
   def test_renders_passthrough_and_open_blocks
