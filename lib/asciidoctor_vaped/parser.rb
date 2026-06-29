@@ -30,6 +30,7 @@ module AsciidoctorVaped
       Blocks::UnorderedList,
       Blocks::OrderedList,
       Blocks::DescriptionList,
+      Blocks::CalloutList,
       Blocks::Paragraph
     ].freeze
     NODE_CHAIN = Blocks.chain(NODE_HANDLERS)

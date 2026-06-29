@@ -31,6 +31,24 @@ asciidoctor_vaped -s 'hello *world*'
 asciidoctor_vaped demo.adoc demo.dkb
 ```
 
+### Source highlighting and callouts
+
+Highlight.js is used by default for HTML source blocks. Select an optional
+server-side highlighter with the `syntax-highlighter` document attribute:
+
+```adoc
+:syntax-highlighter: rouge
+
+[source,ruby]
+----
+puts "hello" # <1>
+----
+<1> Prints a greeting.
+```
+
+Install `rouge` for `:syntax-highlighter: rouge`, or `pygments.rb` for
+`:syntax-highlighter: pygments`. These gems are loaded only when selected.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

@@ -85,6 +85,69 @@ class HTMLConverterTest < Minitest::Test
     assert_includes html, '<pre class="highlight"><code class="language-ruby" data-lang="ruby">'
   end
 
+  def test_renders_source_callouts_and_callout_list
+    html = convert <<~ADOC
+      [source,ruby]
+      ----
+      puts "hello" # <.>
+      puts "again" # <.>
+      ----
+      <1> Prints a greeting.
+      <2> Prints another greeting.
+    ADOC
+
+    assert_includes html, 'puts &quot;hello&quot;<i class="conum" data-value="1"></i><b>(1)</b>'
+    assert_includes html, 'puts &quot;again&quot;<i class="conum" data-value="2"></i><b>(2)</b>'
+    assert_includes html, '<div class="colist arabic"><ol>'
+    assert_includes html, '<li data-value="1"><p>Prints a greeting.</p></li>'
+    assert_includes html, '<li data-value="2"><p>Prints another greeting.</p></li>'
+  end
+
+  def test_highlightjs_is_default_and_adds_assets_to_standalone_output
+    html = AsciidoctorVaped.convert <<~ADOC
+      [source,ruby]
+      ----
+      puts "hello"
+      ----
+    ADOC
+
+    assert_includes html, "highlight.js/11.11.1/styles/github.min.css"
+    assert_includes html, "highlight.js/11.11.1/highlight.min.js"
+    assert_includes html, "hljs.highlightElement(code)"
+  end
+
+  def test_highlightjs_can_load_assets_from_a_local_directory
+    html = AsciidoctorVaped.convert <<~ADOC
+      :highlightjsdir: highlightjs
+
+      [source,ruby]
+      ----
+      puts "hello"
+      ----
+    ADOC
+
+    assert_includes html, 'href="highlightjs/styles/github.min.css"'
+    assert_includes html, 'src="highlightjs/highlight.min.js"'
+  end
+
+  def test_rouge_highlighter_is_selected_by_document_attribute
+    require "rouge"
+    html = convert <<~ADOC
+      :syntax-highlighter: rouge
+
+      [source,ruby]
+      ----
+      puts "hello" # <1>
+      ----
+      <1> Prints a greeting.
+    ADOC
+
+    assert_includes html, '<span style='
+    assert_includes html, '<i class="conum" data-value="1"></i><b>(1)</b>'
+  rescue LoadError
+    skip "Rouge is optional"
+  end
+
   def test_renders_media_blocks
     html = convert <<~ADOC
       .Architecture

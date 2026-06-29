@@ -67,6 +67,19 @@ class DocBookConverterTest < Minitest::Test
     assert_includes docbook, "<varlistentry><term>Term</term><listitem><para>Description</para>\n<variablelist>"
   end
 
+  def test_renders_semantic_source_callouts
+    docbook = convert <<~ADOC
+      [source,ruby]
+      ----
+      puts "hello" # <1>
+      ----
+      <1> Prints a greeting.
+    ADOC
+
+    assert_includes docbook, 'puts &quot;hello&quot;<co xml:id="CO1-1"></co>'
+    assert_includes docbook, '<callout arearefs="CO1-1"><para>Prints a greeting.</para></callout>'
+  end
+
   private
 
   def convert(source)

@@ -13,6 +13,7 @@ module AsciidoctorVaped
         ulist: :list,
         olist: :list,
         dlist: :list,
+        colist: :callout_list,
         table: :table,
         admonition: :admonition,
         example: :titled_block,

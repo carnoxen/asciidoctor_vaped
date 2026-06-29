@@ -20,6 +20,7 @@ module AsciidoctorVaped
 
       def convert(document)
         @document = document
+        @listing_number = 0
         title = document.doctitle || "Untitled"
         body = render_nodes(document)
         tag("article", "\n#{tag "title", escape(title)}\n#{body}\n")
@@ -35,7 +36,28 @@ module AsciidoctorVaped
       def listing(node)
         language = node.attributes[:language]
         attrs = language ? { language: } : {}
-        tag("programlisting", escape(node.text), attrs)
+        extraction = Callouts.extract(node.text)
+        @listing_number += 1
+        @callout_ids = extraction.marks.each_with_index.each_with_object(Hash.new { |ids, number| ids[number] = [] }) do |(mark, index), ids|
+          ids[mark.number] << "CO#{@listing_number}-#{index + 1}"
+        end
+        occurrence = Hash.new(0)
+        content = Callouts.restore_html(escape(extraction.source), extraction.marks) do |mark|
+          id = @callout_ids.fetch(mark.number).fetch(occurrence[mark.number])
+          occurrence[mark.number] += 1
+          tag("co", "", "xml:id": id)
+        end
+        tag("programlisting", content, attrs)
+      end
+
+      def callout_list(node)
+        items = node.children.map do |item|
+          ids = @callout_ids&.fetch(item.attributes[:number], nil)
+          attrs = { arearefs: ids&.join(" ") }.compact
+          tag("callout", tag("para", render_text(item)), attrs)
+        end.join("\n")
+        @callout_ids = nil
+        tag("calloutlist", "\n#{items}\n")
       end
 
       def media(node)

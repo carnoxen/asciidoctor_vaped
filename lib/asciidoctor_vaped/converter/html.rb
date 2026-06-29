@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "html/syntax_highlighter"
+
 module AsciidoctorVaped
   module Converter
     class HTML < BaseConverter
@@ -28,12 +30,15 @@ module AsciidoctorVaped
 
       def convert(document)
         @document = document
+        @syntax_highlighter = SyntaxHighlighter.create(document)
         body = render_nodes(document)
         return body if @options[:header_footer] == false
 
         body = [document_title(document), body].reject(&:empty?).join("\n")
-        head = tag("head", "\n    #{tag "meta", nil, charset: "utf-8"}\n  ")
-        body = tag("body", "\n    #{body}\n  ")
+        head_content = [tag("meta", nil, charset: "utf-8"), @syntax_highlighter.head].reject(&:empty?).join("\n    ")
+        head = tag("head", "\n    #{head_content}\n  ")
+        body_content = [body, @syntax_highlighter.footer].reject(&:empty?).join("\n    ")
+        body = tag("body", "\n    #{body_content}\n  ")
         "#{tag "!DOCTYPE html"}\n#{tag "html", "\n  #{head}\n  #{body}\n"}"
       end
 
@@ -47,7 +52,16 @@ module AsciidoctorVaped
       def listing(node)
         language = node.attributes[:language]
         attrs = language ? { class: "language-#{language}", "data-lang": language } : {}
-        figure(node, tag("pre", tag("code", escape(node.text), attrs), class: "highlight"))
+        extraction = Callouts.extract(node.text)
+        code = @syntax_highlighter.highlight(extraction.source, language, extraction.marks) { |mark| callout_mark(mark) }
+        figure(node, tag("pre", tag("code", code, attrs), class: "highlight"))
+      end
+
+      def callout_list(node)
+        items = node.children.map do |item|
+          tag("li", tag("p", render_text(item)), "data-value": item.attributes[:number])
+        end.join("\n")
+        tag("div", tag("ol", "\n#{items}\n"), class: "colist arabic")
       end
 
       def literal(node)
@@ -194,6 +208,11 @@ module AsciidoctorVaped
 
       def default_alt(node)
         File.basename(node.attributes.fetch(:target), ".*").tr("_-", " ")
+      end
+
+      def callout_mark(mark)
+        attrs = { class: "conum", "data-value": mark.number }
+        %(#{tag "i", "", attrs}#{tag "b", "(#{mark.number})"})
       end
 
       def figcaption(node)

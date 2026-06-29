@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "common/base_node"
+require_relative "inlines/callouts"
 require_relative "inlines/link"
 require_relative "inlines/url"
 require_relative "inlines/strong"

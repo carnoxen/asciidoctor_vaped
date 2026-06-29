@@ -25,6 +25,7 @@ require_relative "blocks/lists/list_base"
 require_relative "blocks/lists/unordered_list"
 require_relative "blocks/lists/ordered_list"
 require_relative "blocks/lists/description_list"
+require_relative "blocks/lists/callout_list"
 require_relative "blocks/paragraph"
 
 module AsciidoctorVaped
