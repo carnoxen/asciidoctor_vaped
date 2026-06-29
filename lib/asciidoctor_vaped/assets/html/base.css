@@ -1,0 +1,78 @@
+@layer base;
+
+@layer base {
+  /* Base styles for Asciidoctor Vaped HTML output */
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+  }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  code {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+  }
+
+  .conum,
+  .colist > li::before {
+    display: inline-block;
+    color: #fff !important;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    text-align: center;
+    font-size: 0.65em;
+    width: 1.67em;
+    height: 1.67em;
+    line-height: 1.67em;
+    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+    font-style: normal;
+    font-weight: bold;
+  }
+
+  .colist > li::before {
+    content: attr(data-value);
+  }
+
+  .conum {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  pre .conum {
+    position: relative;
+    top: -0.125em;
+  }
+
+  .colist {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .colist > li::before {
+    margin-right: 0.75em;
+  }
+}

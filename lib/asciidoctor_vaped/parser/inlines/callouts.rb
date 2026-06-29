@@ -6,7 +6,7 @@ module AsciidoctorVaped
     Extraction = Data.define(:source, :marks)
 
     MARK = /(?<!\\)(?:<(?<number>\d+|\.)>|<!--(?<xml_number>\d+|\.)-->)/
-    SUFFIX = /(?:\s*(?:(?:\/\/|#|;;)\s*)?#{MARK})+\s*\z/
+    SUFFIX = /(?:(?:(?:\/\/|#|;;)\s*)?#{MARK}\s*)+\z/
 
     module_function
 
@@ -24,7 +24,7 @@ module AsciidoctorVaped
           next
         end
 
-        clean_body = body[0...match.begin(0)].rstrip
+        clean_body = body[0...match.begin(0)]
         position = clean_source.length + clean_body.length
         match[0].scan(MARK) do |number, xml_number|
           number = number || xml_number

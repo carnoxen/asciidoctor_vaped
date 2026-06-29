@@ -5,6 +5,8 @@ require_relative "html/syntax_highlighter"
 module AsciidoctorVaped
   module Converter
     class HTML < BaseConverter
+      BASE_STYLESHEET = File.read(File.expand_path("../assets/html/base.css", __dir__)).freeze
+
       ELEMENT_NAMES = {
         section: "section",
         paragraph: "p",
@@ -35,7 +37,11 @@ module AsciidoctorVaped
         return body if @options[:header_footer] == false
 
         body = [document_title(document), body].reject(&:empty?).join("\n")
-        head_content = [tag("meta", nil, charset: "utf-8"), @syntax_highlighter.head].reject(&:empty?).join("\n    ")
+        head_content = [
+          tag("meta", nil, charset: "utf-8"),
+          tag("style", "\n#{BASE_STYLESHEET}\n    "),
+          @syntax_highlighter.head
+        ].reject(&:empty?).join("\n    ")
         head = tag("head", "\n    #{head_content}\n  ")
         body_content = [body, @syntax_highlighter.footer].reject(&:empty?).join("\n    ")
         body = tag("body", "\n    #{body_content}\n  ")
@@ -59,9 +65,9 @@ module AsciidoctorVaped
 
       def callout_list(node)
         items = node.children.map do |item|
-          tag("li", tag("p", render_text(item)), "data-value": item.attributes[:number])
+          tag("li", render_text(item), "data-value": item.attributes[:number])
         end.join("\n")
-        tag("div", tag("ol", "\n#{items}\n"), class: "colist arabic")
+        tag("ol", "\n#{items}\n", class: "colist arabic")
       end
 
       def literal(node)
@@ -211,8 +217,7 @@ module AsciidoctorVaped
       end
 
       def callout_mark(mark)
-        attrs = { class: "conum", "data-value": mark.number }
-        %(#{tag "i", "", attrs}#{tag "b", "(#{mark.number})"})
+        tag("i", mark.number, class: "conum")
       end
 
       def figcaption(node)

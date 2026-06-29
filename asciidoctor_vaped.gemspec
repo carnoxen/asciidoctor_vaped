@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(__dir__) do
-    Dir["exe/*", "lib/**/*.rb", "sig/**/*.rbs", "LICENSE.txt", "README.md"]
+    Dir["exe/*", "lib/**/*", "sig/**/*.rbs", "LICENSE.txt", "README.md"]
   end
   spec.bindir = "exe"
   spec.executables = ["asciidoctor_vaped"]

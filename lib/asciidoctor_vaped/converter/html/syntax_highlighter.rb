@@ -59,10 +59,8 @@ module AsciidoctorVaped
               const range = document.createRange()
               range.setStart(code, 0)
               range.setEndBefore(mark)
-              const callout = { position: range.toString().length, value: mark.dataset.value, index }
-              const label = mark.nextElementSibling
+              const callout = { position: range.toString().length, value: mark.textContent, index }
               mark.remove()
-              if (label?.tagName === 'B') label.remove()
               return callout
             })
             hljs.highlightElement(code)
@@ -72,9 +70,8 @@ module AsciidoctorVaped
               while ((node = walker.nextNode())) {
                 if (callout.position <= position + node.length) {
                   const tail = node.splitText(callout.position - position)
-                  const mark = Object.assign(document.createElement('i'), { className: 'conum' })
-                  mark.dataset.value = callout.value
-                  tail.before(mark, Object.assign(document.createElement('b'), { textContent: `(${callout.value})` }))
+                  const mark = Object.assign(document.createElement('i'), { className: 'conum', textContent: callout.value })
+                  tail.before(mark)
                   break
                 }
                 position += node.length
@@ -113,7 +110,8 @@ module AsciidoctorVaped
       def highlight_source(source, language)
         require "pygments"
         options = { nowrap: true, noclasses: true }
-        ::Pygments.highlight(source, lexer: language || "text", options:) || escape(source)
+        lexer = ::Pygments.lexers.values.any? { |details| details[:aliases].include?(language) } ? language : "text"
+        ::Pygments.highlight(source, lexer:, options:) || escape(source)
       rescue LoadError
         raise Error, "Pygments highlighting requires the optional 'pygments.rb' gem"
       end

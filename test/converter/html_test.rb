@@ -25,6 +25,16 @@ class HTMLConverterTest < Minitest::Test
     refute_includes html, "<title>"
   end
 
+  def test_embeds_base_stylesheet_in_standalone_output
+    html = AsciidoctorVaped.convert("Body text.")
+
+    assert_includes html, "<style>"
+    assert_includes html, ".conum {"
+    assert_includes html, "pointer-events: none"
+    assert_includes html, "user-select: none"
+    assert_includes html, "content: attr(data-value)"
+  end
+
   def test_renders_section_levels_as_h2_through_h6
     html = convert <<~ADOC
       == Level 1
@@ -96,11 +106,15 @@ class HTMLConverterTest < Minitest::Test
       <2> Prints another greeting.
     ADOC
 
-    assert_includes html, 'puts &quot;hello&quot;<i class="conum" data-value="1"></i><b>(1)</b>'
-    assert_includes html, 'puts &quot;again&quot;<i class="conum" data-value="2"></i><b>(2)</b>'
-    assert_includes html, '<div class="colist arabic"><ol>'
-    assert_includes html, '<li data-value="1"><p>Prints a greeting.</p></li>'
-    assert_includes html, '<li data-value="2"><p>Prints another greeting.</p></li>'
+    assert_includes html, 'puts &quot;hello&quot; <i class="conum">1</i>'
+    assert_includes html, 'puts &quot;again&quot; <i class="conum">2</i>'
+    refute_includes html, "<b>(1)</b>"
+    refute_includes html, "<b>(2)</b>"
+    assert_includes html, '<ol class="colist arabic">'
+    assert_includes html, '<li data-value="1">Prints a greeting.</li>'
+    assert_includes html, '<li data-value="2">Prints another greeting.</li>'
+    refute_includes html, '<div class="colist'
+    refute_includes html, '<li data-value="1"><p>'
   end
 
   def test_highlightjs_is_default_and_adds_assets_to_standalone_output
@@ -114,6 +128,7 @@ class HTMLConverterTest < Minitest::Test
     assert_includes html, "highlight.js/11.11.1/styles/github.min.css"
     assert_includes html, "highlight.js/11.11.1/highlight.min.js"
     assert_includes html, "hljs.highlightElement(code)"
+    refute_includes html, "createElement('b')"
   end
 
   def test_highlightjs_can_load_assets_from_a_local_directory
@@ -143,7 +158,8 @@ class HTMLConverterTest < Minitest::Test
     ADOC
 
     assert_includes html, '<span style='
-    assert_includes html, '<i class="conum" data-value="1"></i><b>(1)</b>'
+    assert_includes html, '<i class="conum">1</i>'
+    refute_includes html, "<b>(1)</b>"
   rescue LoadError
     skip "Rouge is optional"
   end
@@ -160,7 +176,21 @@ class HTMLConverterTest < Minitest::Test
     ADOC
 
     assert_includes html, '<span style='
-    assert_includes html, '<i class="conum" data-value="1"></i><b>(1)</b>'
+    assert_includes html, '<i class="conum">1</i>'
+    refute_includes html, "<b>(1)</b>"
+  end
+
+  def test_pygments_falls_back_to_plain_text_for_unknown_language
+    html = convert <<~ADOC
+      :syntax-highlighter: pygments
+
+      [source,unknown-language]
+      ----
+      plain text
+      ----
+    ADOC
+
+    assert_includes html, ">plain text</code>"
   end
 
   def test_renders_media_blocks
