@@ -39,7 +39,7 @@ module AsciidoctorVaped
         head = tag("head", "\n    #{head_content}\n  ")
         body_content = [body, @syntax_highlighter.footer].reject(&:empty?).join("\n    ")
         body = tag("body", "\n    #{body_content}\n  ")
-        "#{tag "!DOCTYPE html"}\n#{tag "html", "\n  #{head}\n  #{body}\n"}"
+        "<!DOCTYPE html>\n#{tag "html", "\n  #{head}\n  #{body}\n"}"
       end
 
       def section(node)
