@@ -112,7 +112,8 @@ module AsciidoctorVaped
 
       def highlight_source(source, language)
         require "pygments"
-        ::Pygments.highlight(source, lexer: language || "text", options: { nowrap: true }) || escape(source)
+        options = { nowrap: true, noclasses: true }
+        ::Pygments.highlight(source, lexer: language || "text", options:) || escape(source)
       rescue LoadError
         raise Error, "Pygments highlighting requires the optional 'pygments.rb' gem"
       end

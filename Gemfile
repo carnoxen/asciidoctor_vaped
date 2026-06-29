@@ -6,5 +6,8 @@ source "https://rubygems.org"
 gemspec
 
 gem "irb"
+gem "logger"
 gem "minitest", "~> 5.0", group: :development
+gem "pygments.rb"
 gem "rake", "~> 13.0"
+gem "rouge"

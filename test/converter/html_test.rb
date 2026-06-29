@@ -148,6 +148,21 @@ class HTMLConverterTest < Minitest::Test
     skip "Rouge is optional"
   end
 
+  def test_pygments_highlighter_is_selected_by_document_attribute
+    html = convert <<~ADOC
+      :syntax-highlighter: pygments
+
+      [source,ruby]
+      ----
+      puts "hello" # <1>
+      ----
+      <1> Prints a greeting.
+    ADOC
+
+    assert_includes html, '<span style='
+    assert_includes html, '<i class="conum" data-value="1"></i><b>(1)</b>'
+  end
+
   def test_renders_media_blocks
     html = convert <<~ADOC
       .Architecture
