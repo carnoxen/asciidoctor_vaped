@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../../common/base_node"
+require_relative "../admonition"
 
 module AsciidoctorVaped
   module Parser
@@ -54,7 +55,7 @@ module AsciidoctorVaped
         end
 
         def admonition?(context)
-          context.pending_attributes[:style]&.to_s&.match?(/\A(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\z/i)
+          Admonition.name? context.pending_attributes[:style]
         end
 
         def default_context_name

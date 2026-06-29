@@ -6,7 +6,10 @@ module AsciidoctorVaped
   module Parser
     module Blocks
       class Admonition < BaseNode
-        PATTERN = /\A(NOTE|TIP|IMPORTANT|WARNING|CAUTION):\s+(.+)\z/
+        NAMES = %w[NOTE TIP IMPORTANT WARNING CAUTION].freeze
+        PATTERN = /\A(#{NAMES.join "|"}):\s+(.+)\z/
+
+        def self.name?(name) = NAMES.include?(name.to_s.upcase)
 
         def parse(context)
           name, text = context.reader.read.match(PATTERN).captures
