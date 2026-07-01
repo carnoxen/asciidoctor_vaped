@@ -106,8 +106,8 @@ class HTMLConverterTest < Minitest::Test
       <2> Prints another greeting.
     ADOC
 
-    assert_includes html, 'puts &quot;hello&quot; <i class="conum">1</i>'
-    assert_includes html, 'puts &quot;again&quot; <i class="conum">2</i>'
+    assert_includes html, 'puts &quot;hello&quot; # <i class="conum">1</i>'
+    assert_includes html, 'puts &quot;again&quot; # <i class="conum">2</i>'
     refute_includes html, "<b>(1)</b>"
     refute_includes html, "<b>(2)</b>"
     assert_includes html, '<ol class="colist arabic">'

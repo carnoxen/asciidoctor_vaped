@@ -5,33 +5,24 @@ module AsciidoctorVaped
     Mark = Data.define(:number, :position)
     Extraction = Data.define(:source, :marks)
 
-    MARK = /(?<!\\)(?:<(?<number>\d+|\.)>|<!--(?<xml_number>\d+|\.)-->)/
-    SUFFIX = /(?:(?:(?:\/\/|#|;;)\s*)?#{MARK}\s*)+\z/
+    MARK = /(?<!\\)<(?<number>\d+|\.)>/
 
     module_function
 
     def extract(source)
       marks = []
       automatic_number = 0
-      clean_source = +""
-
-      source.each_line do |line|
-        newline = line.end_with?("\n") ? "\n" : ""
-        body = newline.empty? ? line : line.delete_suffix("\n")
-        match = SUFFIX.match(body)
-        unless match
-          clean_source << line.gsub(/\\(?=<(?:\d+|\.)>)/, "")
-          next
-        end
-
-        clean_body = body[0...match.begin(0)]
-        position = clean_source.length + clean_body.length
-        match[0].scan(MARK) do |number, xml_number|
-          number = number || xml_number
+      removed_length = 0
+      clean_source = source.gsub(/\\(?=<(?:\d+|\.)>)|#{MARK}/) do |token|
+        if token == "\\"
+          removed_length += 1
+        else
+          number = Regexp.last_match[:number]
           number = (automatic_number += 1).to_s if number == "."
-          marks << Mark.new(number:, position:)
+          marks << Mark.new(number:, position: Regexp.last_match.begin(0) - removed_length)
+          removed_length += token.length
         end
-        clean_source << clean_body << newline
+        ""
       end
 
       Extraction.new(source: clean_source, marks:)

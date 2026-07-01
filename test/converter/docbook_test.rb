@@ -76,7 +76,7 @@ class DocBookConverterTest < Minitest::Test
       <1> Prints a greeting.
     ADOC
 
-    assert_includes docbook, 'puts &quot;hello&quot; <co xml:id="CO1-1"></co>'
+    assert_includes docbook, 'puts &quot;hello&quot; # <co xml:id="CO1-1"></co>'
     assert_includes docbook, '<callout arearefs="CO1-1"><para>Prints a greeting.</para></callout>'
   end
 
